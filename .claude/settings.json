@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(wc:*)",
+      "Bash(head:*)",
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'STEERING ACTIVE — read in order: docs/PROGRESS.md -> docs/DECISIONS.md -> docs/DATASET.md before acting. Rules (CLAUDE.md): never state a data fact or metric you have not measured THIS session; label claims FACT/HYPOTHESIS/ASSUMPTION; no external datasets (disqualification). docs/DATASET.md is the single source of truth for data facts.'"
+          }
+        ]
+      }
+    ]
+  }
+}

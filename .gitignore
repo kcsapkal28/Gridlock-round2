@@ -1,0 +1,6 @@
+.venv/
+.kaggle_url
+eda/eda_out/
+__pycache__/
+*.parquet
+"jan to may"*.csv
