@@ -30,4 +30,26 @@ Shape: **298,450 rows × 24 columns**. All columns read as `object` (str); cast 
 | 23 | validation_status | approved/rejected/created1/processing/duplicate | approved | ~42 | KEEP (validity filter) |
 | 24 | validation_timestamp | When reviewed | 2023-11-30 03:08:24+00 | ~42 | KEEP (validation block) |
 
-Offence-code ↔ label map: populated in Phase 1 Task 1.2.
+## Offence-code ↔ label map (27 codes, verified 1:1)
+
+| Code | Label | | Code | Label |
+|------|-------|-|------|-------|
+| 104 | PARKING NEAR ROAD CROSSING | | 125 | DEMANDING EXCESS FARE |
+| 105 | PARKING ON FOOTPATH | | 130 | VIOLATING LANE DISCIPLINE |
+| 106 | PARKING NEAR TRAFFIC LIGHT OR ZEBRA CROSS | | 133 | USING BLACK FILM/OTHER MATERIALS |
+| 107 | PARKING IN A MAIN ROAD | | 134 | U TURN PROHIBITED |
+| 108 | PARKING OPPOSITE TO ANOTHER PARKED VEHICLE | | 135 | AGAINST ONE WAY/NO ENTRY |
+| 109 | DOUBLE PARKING | | 136 | OBSTRUCTING DRIVER |
+| 110 | FAIL TO USE SAFETY BELTS | | 139 | PARKING OTHER THAN BUS STOP |
+| 111 | PARKING NEAR BUSTOP/SCHOOL/HOSPITAL ETC | | 140 | RIDER NOT WEARING HELMET |
+| 112 | WRONG PARKING | | 144 | WITHOUT SIDE MIRROR |
+| 113 | NO PARKING | | 146 | STOPING ON WHITE/STOP LINE |
+| 115 | JUMPING TRAFFIC SIGNAL | | 147 | H T V PROHIBITED |
+| 116 | DEFECTIVE NUMBER PLATE | | 237 | 2W/3W - USING MOBILE PHONE |
+| 123 | CARRYING LENGHTY MATERIAL | | 437 | OTHER - USING MOBILE PHONE |
+| 124 | REFUSE TO GO FOR HIRE | | | |
+
+## Derived columns (added in cleaning)
+- `created_dt` — UTC tz-aware datetime parsed from `created_datetime`.
+- `validation_status_clean` — validation_status with nulls coalesced to "NULL".
+- `is_valid` — bool; False iff status ∈ {rejected, duplicate}. 83.0% True.
