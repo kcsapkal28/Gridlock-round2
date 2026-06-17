@@ -37,3 +37,21 @@ Running insight log. Each entry dated. Decision-gate outcomes recorded for audit
 - **→ DECISION GATE 1B = HIGH bias (≥0.5):** Task 4.4 (bias-normalised hotspot map) is ACTIVATED. Raw ticket density ≠ true violation density; hotspots must be cross-checked against patrol concentration.
 
 **Plot-state note:** the persistent remote kernel retains matplotlib figure state across cells → all plotting cells now begin with `plt.close("all")`.
+
+---
+
+## Phase 2 — Univariate & Severity (2026-06-17)
+
+**Univariate (2.1):**
+- Vehicles: SCOOTER 92.9k, CAR 87.4k, MOTOR CYCLE 39.9k, PASSENGER AUTO 37.3k dominate. Two-wheelers ≈ 47% of all tickets.
+- Violations: WRONG PARKING 161.9k + NO PARKING 136.6k ≈ 90% of tags; PARKING IN A MAIN ROAD 23.4k is the leading Tier-3.
+- `center_code` top-15 distribution mirrors `police_station` almost exactly → likely a near-1:1 mapping (candidate redundant feature).
+
+**Co-occurrence (2.2):** Dominant bundles are the carriageway-blockers riding on generic tags:
+WRONG PARKING + PARKING IN A MAIN ROAD (15.3k), NO PARKING + PARKING IN A MAIN ROAD (11.0k).
+DEFECTIVE NUMBER PLATE never appears alone (always with wrong/no parking).
+
+**Severity taxonomy (2.3):** Tiers assigned from label semantics (see SEVERITY_TAXONOMY.md).
+- **max_sev takes only {2,3}** — every ticket has ≥1 Tier-2 violation; **8.76% reach Tier-3**. So `max_sev` is near-binary; use `sev_sum` for gradation.
+- **→ DECISION GATE 2 = proceed.** Guard confirmed only the 13 known document/behaviour/moving labels default to Tier 0; no Tier-2/3 label under-scored.
+- Stored `derived/severity.parquet` (id, is_valid, max_sev, sev_sum).
