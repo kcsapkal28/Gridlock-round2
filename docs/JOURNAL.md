@@ -179,3 +179,12 @@ Use one of the two templates below. Keep entries terse but self-contained.
 - Thesis quantified: impact-hotspots are NOT findable by counting (0.59) but ARE by character (0.85).
 - Next: IT4 finalize — regen outputs locally, MODEL_CARD, canonical FE notebook, refresh steering docs.
 <!-- Append the next entry below this line. -->
+
+### 2026-06-18 — IT4 finalize (model card, notebook, docs)
+- Did: MODEL_CARD.md (3 models + metrics + limits); canonical gridlock_fe.ipynb (24 cells, Kaggle-native,
+  prereq=EDA notebook); FE_REPORT.md updated to v2; PROGRESS refreshed; ADR-005 recorded.
+- Verification: full FE pipeline re-run end-to-end LOCALLY (00->51) clean — fe_base 243,270; 5,492 cells;
+  313 sig; face validity 3.15x; impact R2 0.15/0.34/0.98; detection AUC 0.59/0.85/0.99. All reproduced.
+- State: MODEL DELIVERABLE COMPLETE (score v2 + impact regression + hotspot detector, evaluated &
+  documented). Pending external: fresh Kaggle URL to re-sync; MapMyIndia key; frontend (later).
+<!-- Append the next entry below this line. -->

@@ -132,3 +132,23 @@
 - **β selection rule:** max temporal stability *subject to* impact delivery (tier3_lift≥2, heavy≥1) —
   overrides naïve max-stability, which selected an anti-impact blend.
 **Status:** Accepted. Evidence: JOURNAL 2026-06-17 entries; `fe/findings/FE_REPORT.md`.
+
+## ADR-005 — Supervised models + local-execution pivot
+**Context:** User asked to "build the model, evaluate, keep optimising" autonomously; mid-run the
+Kaggle proxy token expired (unreachable).
+**Decisions:**
+- **Local pivot:** rebuilt the entire pipeline locally from the source CSV via `run_local.py`
+  (rewrites `/kaggle` paths). Verified local == remote (293,068 vs 293,070 cleaned rows — a 2-row
+  pandas-version dedup tie; identical cells/top-zones). Local is now the working environment until a
+  fresh Kaggle URL is provided.
+- **Score optimization (IT1):** empirical-Bayes smoothing of small-cell rates (K=40) + raised the
+  ranked-evidence threshold to n≥50; β re-selected to 0.75 by ranked-cell stability subject to
+  delivering impact. Face validity 2.16×→3.15×.
+- **Two supervised models added (IT2/IT3):** LightGBM impact regression and hotspot-detection
+  classifier, evaluated with spatial GroupKFold by gh5 (held-out regions), leakage-controlled
+  (score-internals + coords excluded; spatial features flagged). Volume-only baselines prove
+  volume≠impact (R² 0.15, AUC 0.59); intrinsic character generalizes (R² 0.34, AUC 0.85); full
+  models are deployable (R² 0.98, AUC 0.99).
+- **Score remains the primary product**; models serve generalization, feature-importance, and a fast
+  scorer for future MapMyIndia/road-feature and new-area scoring.
+**Status:** Accepted. Evidence: JOURNAL 2026-06-18; `fe/findings/MODEL_CARD.md`.

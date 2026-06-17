@@ -5,11 +5,12 @@
 > after any milestone. Keep it short and current — this is a snapshot, not a
 > history (history goes in JOURNAL.md, rationale in DECISIONS.md).
 
-_Last updated: 2026-06-17 (post-FE score v1)_
+_Last updated: 2026-06-18 (post-models v2)_
 
 ## Current phase
-**Congestion-impact score v1 built, validated, and rendered.** Next: MapMyIndia
-enrichment (needs key) + demo packaging / canonical FE notebook.
+**Model complete: impact score v2 + supervised impact & detection models, evaluated.**
+Running LOCALLY (Kaggle token expired — `run_local.py` rebuilds from CSV; local==remote).
+Next: MapMyIndia enrichment (needs key) + frontend/system (later, per user).
 
 ## Done ✅
 - Profiled the dataset; verified facts in [DATASET.md](DATASET.md).
@@ -33,19 +34,22 @@ Round 2 is a **panel-judged prototype**, not a metric leaderboard. Build a
 demoable **enforcement-prioritisation system**: hotspot detection + a road-grounded
 congestion-impact score + a prioritised enforcement map. No invented R² target.
 
-## Done (FE) ✅
-- Spec + plan (`docs/superpowers/`); ADR-004. Pipeline `fe/cells/` on Kaggle kernel.
-- Score: geohash-7, is_valid, impact_intensity (steep tiers × vehicle mult), Gi* + impact-
-  character ensemble (β=0.60). 5,492 cells / 1,229 ranked.
-- Validated: **face validity Tier-3 lift 2.16×**, stability 0.774, approved-only 0.747,
-  top-50 median 26 devices. Report `fe/findings/FE_REPORT.md`.
-- Outputs: `cells.geojson`, `impact_map.html`, `priority_table.csv`, rollups, KDE;
-  `mapmyindia_enrich.py` (key-gated no-op).
+## Done (FE + models) ✅
+- Spec + plan (`docs/superpowers/`); ADR-004/005. Pipeline `fe/cells/` (runs on Kaggle OR local).
+- **Score v2:** geohash-7, is_valid, impact_intensity (steep tiers × vehicle mult), EB-smoothed
+  rates (K=40), Gi* + impact-character ensemble **β=0.75**. 5,492 cells / **792 ranked (n≥50)**.
+  Face validity **Tier-3 3.15×**, stability 0.782, approved-only 0.715, top-50 median 21 devices.
+- **Supervised models** (spatial gh5-CV): impact regression R² 0.15/0.34/0.98 (vol/intrinsic/full);
+  hotspot-detection ROC-AUC 0.59/**0.85**/0.99. Thesis quantified: volume can't find impact-hotspots,
+  character can. `fe/findings/MODEL_CARD.md`.
+- Outputs: `cells.geojson`, `impact_map.html`, `priority_table.csv`, rollups, KDE, model boosters;
+  notebooks `gridlock_eda.ipynb` + `gridlock_fe.ipynb`; `mapmyindia_enrich.py` (key-gated).
 
 ## Next up ⏭️
 - [ ] **MapMyIndia access/key** — wire `mapmyindia_enrich.py` for road class/geofences + Mappls layer.
-- [ ] Canonical FE notebook (assemble `fe/cells/` like `gridlock_eda.ipynb`) + demo packaging.
+- [ ] Frontend / full working system (per user — later).
 - [ ] Optional: road-segment unit as higher-fidelity enrichment once MapMyIndia is in.
+- [ ] Re-sync artifacts to Kaggle when a fresh proxy URL is available (paste new `.kaggle_url`).
 
 ## Open questions / blockers ❓
 - Is MapMyIndia API access/key actually available to us? (now gating the flow leg)
