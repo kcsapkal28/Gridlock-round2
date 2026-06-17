@@ -116,3 +116,19 @@
   (see review, ADR-002 consequences).
 
 <!-- Add the next decision below this line. -->
+
+## ADR-004 — Congestion-impact score: data-driven Gi*+impact-character ensemble
+**Context:** Round 2 needs a defensible "impact" score; no ground-truth congestion label.
+**Decision:**
+- Unit = geohash-7 (+gh6/gh5 rollups); population = `is_valid` (83%, keeps unreviewed, drops
+  rejected/duplicate — NOT approved-only, which would bias hotspots toward audited areas).
+- Native-core; MapMyIndia = optional enrichment seam (pipeline runs without a key).
+- Engine = blend(β·Gi*-significance on impact_intensity, (1−β)·volume-independent impact-character);
+  β=0.60. PCA + hand composite are concordance cross-checks only.
+- **Amendment (same session):** initial Gi*(sev_sum)+PCA ensemble was volume-dominated (face validity
+  FAILED 0.56×). Root cause: Tier-2 floor makes sev_sum≈volume. Fixed via steep per-ticket
+  `impact_intensity` (tier {0:0,1:.5,2:1,3:6} × vehicle mult) + explicit impact-character axis.
+  Face validity now 2.16× Tier-3.
+- **β selection rule:** max temporal stability *subject to* impact delivery (tier3_lift≥2, heavy≥1) —
+  overrides naïve max-stability, which selected an anti-impact blend.
+**Status:** Accepted. Evidence: JOURNAL 2026-06-17 entries; `fe/findings/FE_REPORT.md`.
