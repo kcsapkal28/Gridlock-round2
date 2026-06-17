@@ -109,3 +109,24 @@ DEFECTIVE NUMBER PLATE never appears alone (always with wrong/no parking).
 - Central commercial (Upparpet 09:00, Vijayanagara/Shivajinagar 10:00, Kodigehalli 11:00).
 - Peripheral/highway (HAL Old Airport 04:00–05:00, Chikkajala 04:00, K.R. Pura 00:00).
 - This is the kept "weak signal": per-zone enforcement rhythm differs and is usable as a zone-level (not city-level) feature, still NOT a congestion-timing proxy.
+
+---
+
+## Phase 6 — Hidden-Pattern Hunt (2026-06-17)
+
+**6.1 Repeat offenders:** mostly one-off (231,890 vehicles; mean 1.26, median 1 ticket; max 51). 643 vehicles with ≥10 tickets = only 3.1% of data, ticketed across ~3 distinct cells → mobile, not chronic-single-spot. Weak signal; not a hotspot driver.
+
+**6.2 Plate corrections:** on reviewed tickets, `vehicle_number` changed only 1.0%, `vehicle_type` 3.6% → `vehicle_number` reliable; `updated_*` columns low-value.
+
+**6.3 SCITA flag:** TRUE = 87% overall; **100% for any reviewed ticket**, 68% for unreviewed; collapses to 6% in partial-April (not-yet-synced). → It's a **pipeline-maturity flag** (time-dependent), NOT a data-quality signal. Don't use as a feature naively.
+
+**6.4 Severity-vs-volume divergence (FLAGSHIP):**
+- Cell-level corr(count, impact=Σsev) = **0.969** → volume is a decent proxy in bulk (Tier-2 floor on every ticket).
+- BUT a high-severity tail diverges sharply: micro-hotspots that are **near-100% Tier-3** yet rank ~900th by volume — e.g. K.R. Pura cell (n=55, **all 55 Tier-3**), Yeshwanthpura (n=64, T3=59), Mahadevapura/Banaswadi/Jayanagara cells.
+- **These carriageway-blocking micro-hotspots are invisible to count-based enforcement.** The impact score's value is in this tail. `derived/divergence.parquet`.
+
+**6.5 Completeness critic (→ DECISION GATE 6 = saturation, proceed):**
+- `center_code` ↔ `police_station` is **~1:1** (52/52 codes→1 station) → redundant feature.
+- **`location` free-text = rich native FE goldmine** (99.1% present, 10,935 unique): "road" 92.7%, "main road" 22.0%, "circle" 19.7%, "nagar" 46.6%, "cross" 12.3%, "junction" 9.6%, "metro" 0.4%, POIs mall 5.7% / market 3.3% / hospital 1.6%. Road-class + POI context with ZERO external data — top FE candidate.
+- `data_sent_to_scita_timestamp` (86% null) and `modified_datetime` carry no extra signal beyond what's used — skipped with reason.
+- **All 24 columns examined or explicitly dropped/skipped.**
