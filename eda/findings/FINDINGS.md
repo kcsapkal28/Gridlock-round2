@@ -93,3 +93,19 @@ DEFECTIVE NUMBER PLATE never appears alone (always with wrong/no parking).
 - Single-device "patrol artifact" cells are all small (n=108–588) and never reach top ranks.
 - corr(raw count, distinct devices) = **0.608**.
 - **VERDICT:** despite device Gini 0.79, the headline hotspots are robust; enforcement bias lives in the long tail, not the core. `derived/grid_bias.parquet`.
+
+---
+
+## Phase 5 — Cross-Dimensional (2026-06-17)
+
+**Vehicle × severity (5.1):** volume ≠ impact at the vehicle level too.
+- **Tier-3 rate by vehicle:** BMTC/KSRTC bus **46.3%**, private bus 30.7%, tempo 26.7%, HGV 25.3%, lorry 25.0% — heavy/commercial vehicles dominate carriageway-blocking.
+- Two-wheelers (volume leaders) are low-impact: scooter 4.4%, motorcycle 5.4% Tier-3. Car 11.3%.
+- **Implication:** an impact score should up-weight heavy-vehicle violations; raw two-wheeler counts overstate congestion contribution.
+
+**Station mean severity (5.1):** peripheral IT-corridor stations lead per-ticket severity — Whitefield 3.74, Mahadevapura 3.60, HAL Old Airport 3.15 (mean sev_sum) — vs lower for high-volume central stations. Spatial version of the volume≠impact divergence.
+
+**Space × time (5.2, enforcement-activity framing per Gate 3):** hotspots have genuinely distinct peak enforcement hours →
+- Central commercial (Upparpet 09:00, Vijayanagara/Shivajinagar 10:00, Kodigehalli 11:00).
+- Peripheral/highway (HAL Old Airport 04:00–05:00, Chikkajala 04:00, K.R. Pura 00:00).
+- This is the kept "weak signal": per-zone enforcement rhythm differs and is usable as a zone-level (not city-level) feature, still NOT a congestion-timing proxy.
