@@ -55,3 +55,22 @@ DEFECTIVE NUMBER PLATE never appears alone (always with wrong/no parking).
 - **max_sev takes only {2,3}** — every ticket has ≥1 Tier-2 violation; **8.76% reach Tier-3**. So `max_sev` is near-binary; use `sev_sum` for gradation.
 - **→ DECISION GATE 2 = proceed.** Guard confirmed only the 13 known document/behaviour/moving labels default to Tier 0; no Tier-2/3 label under-scored.
 - Stored `derived/severity.parquet` (id, is_valid, max_sev, sev_sum).
+
+---
+
+## Phase 3 — Temporal & Timestamp Trust (2026-06-17)
+
+**Timestamp anomaly (3.1) — THE pivotal gate:**
+- Dead window 15:00–21:00 IST holds only **0.86%** of tickets.
+- It is **near-uniform across all stations (std 0.011) and devices (std 0.008)** → systemic, not behavioural.
+- Overall hour profile is bimodal (2–5 AM hump + 8 AM–noon peak), collapses after 14:00. No evening enforcement.
+- Per-station *active-window shape* DOES differ (HAL ~5 AM, Shivajinagar ~10 AM, City Market midnight bump) → weak station-level timing signal.
+- create→modify lag median 15 min → `created_datetime` is genuine real-time capture (officer logging), i.e. it measures **enforcement activity**, not violation occurrence.
+- **VERDICT:** `created_datetime` = *when BTP enforces*, NOT *when congestion happens*. Real evening parking-congestion is exactly when the data goes dark.
+- **→ DECISION GATE 3 (user decision): "Keep as weak signal."** Hour-of-day usable only as a heavily-caveated, per-station enforcement-activity feature; NEVER as a literal congestion-timing proxy. Activates per-zone hour profiling in Task 5.2.
+- **Time convention fixed: IST (Asia/Kolkata).**
+
+**Calendar (3.2):**
+- Range 2023-11-10 → 2024-04-08 (Nov & Apr partial — do not read as trend).
+- Monthly: Nov 43k(partial), Dec 63k, Jan 65k, **Feb 52k, Mar 54k** — clear step-down in enforcement volume after January (policy/staffing shift, not necessarily fewer violations).
+- Day-of-week: **Sunday highest (49.4k), Monday lowest (34k)** — weekend-skewed enforcement.
