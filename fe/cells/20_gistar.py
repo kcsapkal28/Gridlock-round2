@@ -4,7 +4,7 @@ from esda.getisord import G_Local
 f=pd.read_parquet("/kaggle/working/cell_features_full.parquet")
 xy=f[["lon","lat"]].values
 w=KNN.from_array(xy,k=8); w.transform="r"
-y=f["sev_sum_total"].values.astype(float)
+y=f["impact_intensity_total"].values.astype(float)   # Gi* on IMPACT intensity, not volume
 gi=G_Local(y,w,star=True,seed=42)   # Gi* (include self)
 f["gi_z"]=gi.Zs
 f["gi_p"]=gi.p_sim

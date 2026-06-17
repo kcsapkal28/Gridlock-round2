@@ -114,3 +114,23 @@ Use one of the two templates below. Keep entries terse but self-contained.
 - State: pipeline committed through 22_ensemble + 30_validate; fix pending user confirm.
 
 <!-- Append the next entry below this line. -->
+
+### 2026-06-17 — FE engine amended (impact-intensity) — face validity now PASSES
+- Did: Diagnosed volume-domination; amended engine. Per-ticket impact_intensity =
+  tier_weight{0:0,1:.5,2:1,3:6} x vehicle_mult{heavy 2.0, commercial 1.3, else 1.0}.
+  Gi* now on impact_intensity_total (not sev_sum). Ensemble = beta*pct(Gi*) +
+  (1-beta)*impact_character, where impact_character = mean percentile of
+  [tier3_share, heavy_share, road(main_road|junction|circle)] (volume-INDEPENDENT).
+  PCA + hand kept as concordance cross-checks only.
+- Result (FACT — cell fe/cells/30_validate.py, beta grid):
+  - beta selected = **0.60** (rule: max temporal stability s.t. tier3_lift>=2 & heavy>=1;
+    naive max-stability picked 0.75 which FAILED impact, heavy_lift 0.91x — rejected).
+  - Temporal stability Spearman = **0.774** (aspirational 0.80; capped by Feb enforcement-volume
+    regime drop — honest limitation, not a methodology fault).
+  - Approved-only sensitivity = **0.747** (~threshold 0.75).
+  - Top-50 median distinct_devices = **26** (robust, multi-device).
+  - **FACE VALIDITY PASSES: top-50 tier3 lift 2.16x, heavy lift 1.03x** (was 0.56x/0.19x).
+  - Gi*-character concordance tau = 0.120 (low BY DESIGN — significance vs character are orthogonal).
+- State: engine fixed + re-validated; cells 10/11/20/21/22/30 + scorelib updated. Next: outputs (geojson,
+  priority table, KDE, MapMyIndia seam, map), FE_REPORT.
+<!-- Append the next entry below this line. -->

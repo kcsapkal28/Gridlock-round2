@@ -6,6 +6,12 @@ b["date"]=b["created_dt"].dt.date
 HEAVY={"BUS (BMTC/KSRTC)","PRIVATE BUS","TEMPO","HGV","LORRY/GOODS VEHICLE","TANKER","FACTORY BUS","TOURIST BUS","SCHOOL VEHICLE"}
 COMMERCIAL=HEAVY|{"PASSENGER AUTO","GOODS AUTO","LGV","MAXI-CAB","VAN"}
 TWOW={"SCOOTER","MOTOR CYCLE","MOPED"}
+# per-ticket impact intensity: steep tier weights x vehicle multiplier (impact, not volume)
+TIER_W={0:0.0,1:0.5,2:1.0,3:6.0}
+b["_tw"]=b["max_sev"].map(TIER_W)
+b["_vmult"]=np.where(b["vehicle_type_final"].isin(HEAVY),2.0,
+              np.where(b["vehicle_type_final"].isin(COMMERCIAL),1.3,1.0))
+b["impact_intensity"]=b["_tw"]*b["_vmult"]
 loc=b["location"].fillna("").str.lower()
 b["f_main_road"]=loc.str.contains("main road",regex=False)
 b["f_circle"]=loc.str.contains("circle",regex=False)
@@ -24,6 +30,7 @@ feat=pd.DataFrame({
  "lat":g["latitude"].mean(),"lon":g["longitude"].mean(),
  "gh6":g["gh6"].first(),"gh5":g["gh5"].first(),
  "sev_sum_total":g["sev_sum"].sum(),
+ "impact_intensity_total":g["impact_intensity"].sum(),
  "mean_sev":g["sev_sum"].mean(),
  "tier3_count":g["max_sev"].apply(lambda s:(s>=3).sum()),
  "tier3_share":g["max_sev"].apply(lambda s:(s>=3).mean()),

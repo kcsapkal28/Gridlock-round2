@@ -19,7 +19,15 @@ def pull(remote_path, dest_dir="eda/eda_out"):
     r = requests.get(f"{http}/api/contents/{remote_path}",
                      params={"format": "base64", "content": "1"}, timeout=120)
     r.raise_for_status()
-    data = base64.b64decode(r.json()["content"])
+    j = r.json()
+    c, fmt = j["content"], j.get("format")
+    if fmt == "base64":
+        data = base64.b64decode(c)
+    elif fmt == "text":
+        data = c.encode("utf-8")
+    else:  # json (e.g. .ipynb) -> content is a dict
+        import json as _json
+        data = _json.dumps(c).encode("utf-8")
     dest = os.path.join(dest_dir, os.path.basename(remote_path))
     with open(dest, "wb") as f:
         f.write(data)
