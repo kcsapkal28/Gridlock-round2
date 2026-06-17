@@ -74,3 +74,22 @@ DEFECTIVE NUMBER PLATE never appears alone (always with wrong/no parking).
 - Range 2023-11-10 → 2024-04-08 (Nov & Apr partial — do not read as trend).
 - Monthly: Nov 43k(partial), Dec 63k, Jan 65k, **Feb 52k, Mar 54k** — clear step-down in enforcement volume after January (policy/staffing shift, not necessarily fewer violations).
 - Day-of-week: **Sunday highest (49.4k), Monday lowest (34k)** — weekend-skewed enforcement.
+
+---
+
+## Phase 4 — Spatial Hotspots (2026-06-17)
+
+**Grid density (4.1):** 110 m cells. 293,070 tickets → 7,814 cells. **200 cells (2.56%) hold 50% of all tickets** — extreme concentration. Top cell (12.981, 77.610) = 4,298 tickets. `derived/grid_counts.parquet`.
+
+**DBSCAN (4.2):** eps=150 m haversine, min_samples=30 → **267 clusters, 2.6% noise** (excellent). **→ DECISION GATE 4 = proceed.**
+- Caveat: dense core chains into mega-clusters (cluster 2 = 80.9k tickets, Upparpet/central) — grid view stays more actionable for fine targeting.
+- **Tier-3 share varies enormously by location:** Mahadevapura cl.19 = **50%** Tier-3, HAL Old Airport cl.9 = 31%, K.R. Pura 24% — vs <4% in high-volume central clusters. Early signal of high-impact≠high-volume divergence (→ 6.4). `derived/hotspots.parquet`.
+
+**Junction linkage (4.3):** 50.7% of tickets at named BTP junctions overall — **but bimodal by station**: Upparpet 99.5% / Vijayanagara 95.2% / Shivajinagar 81.2% vs HAL Old Airport / K.R. Pura / Kodigehalli / Chikkajala = **0.0%**.
+- **→ `junction_name` is an enforcement-workflow attribute, not true geography.** "No Junction" ≠ "not near a junction"; it means that unit doesn't tag junctions. Use with caution as a feature. Top junctions: Safina Plaza (15.2k), KR Market (11.4k), Elite (10.6k), Sagar Theatre (10.3k). Interactive map: `eda_out/42_hotspots.html`.
+
+**Bias-normalised hotspots (4.4, activated by Gate 1B):**
+- Top raw-count cells are each observed by **23–62 distinct devices** → genuine multi-officer hotspots, NOT single-device artifacts.
+- Single-device "patrol artifact" cells are all small (n=108–588) and never reach top ranks.
+- corr(raw count, distinct devices) = **0.608**.
+- **VERDICT:** despite device Gini 0.79, the headline hotspots are robust; enforcement bias lives in the long tail, not the core. `derived/grid_bias.parquet`.
