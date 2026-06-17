@@ -165,3 +165,17 @@ Use one of the two templates below. Keep entries terse but self-contained.
   - Saved: fe_out/model_impact.txt (booster), importance.csv, oof.csv. Tracked copies in fe/artifacts/.
 - State: local pipeline fully working; model deliverable done. Next: IT3 hotspot-detection classifier.
 <!-- Append the next entry below this line. -->
+
+### 2026-06-18 — IT3 hotspot-detection classifier
+- Did: LightGBM binary classifier, label = top-quartile impact among busy cells (n>=20; 355/1417
+  positives, 25.1%), spatial GroupKFold by gh5, leakage-controlled features. (fe/cells/51_model_detect.py)
+- Result (FACT):
+  - Volume-only ROC-AUC=**0.588** (PR 0.338) — volume ~cannot detect impact-hotspots (coin-flip-ish).
+  - Cell-intrinsic character ROC-AUC=**0.847** (PR 0.724) — strong held-out-region detection from
+    severity/vehicle/road character alone.
+  - Full ROC-AUC=**0.988** (PR 0.968) — deployable detector.
+  - Top features: lag_sev_sum, kde_sev, heavy_share, lag_n, heavy_share_eb, commercial_share.
+  - Saved model_detect.txt + importance/oof; tracked in fe/artifacts/.
+- Thesis quantified: impact-hotspots are NOT findable by counting (0.59) but ARE by character (0.85).
+- Next: IT4 finalize — regen outputs locally, MODEL_CARD, canonical FE notebook, refresh steering docs.
+<!-- Append the next entry below this line. -->
