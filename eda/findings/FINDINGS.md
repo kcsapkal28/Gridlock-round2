@@ -130,3 +130,14 @@ DEFECTIVE NUMBER PLATE never appears alone (always with wrong/no parking).
 - **`location` free-text = rich native FE goldmine** (99.1% present, 10,935 unique): "road" 92.7%, "main road" 22.0%, "circle" 19.7%, "nagar" 46.6%, "cross" 12.3%, "junction" 9.6%, "metro" 0.4%, POIs mall 5.7% / market 3.3% / hospital 1.6%. Road-class + POI context with ZERO external data — top FE candidate.
 - `data_sent_to_scita_timestamp` (86% null) and `modified_datetime` carry no extra signal beyond what's used — skipped with reason.
 - **All 24 columns examined or explicitly dropped/skipped.**
+
+---
+
+## Phase 6b — Validation of externally-supplied claims (2026-06-17)
+
+Four claims from a separate analysis were validated against raw.parquet (cell 70):
+
+1. **"44.03% vehicle_type mismatch" → MISLEADING.** True: 44.035% only because 41.97% NaN-updated rows are counted as mismatches. Genuine type-correction rate = **3.56% (reviewed) / 5.32% (approved)**. Top confusions CAR↔MAXI-CAB, SCOOTER↔MOTOR CYCLE are intra-tier (light vehicles) → negligible impact-score effect. **Decision: coalesce updated→raw vehicle_type; do NOT drop raw (would lose 42% unreviewed rows).**
+2. **"30.1% rejection" → VALID.** 49,754/(approved+rejected=165,154)=30.13%; =28.7% of all reviewed; =16.7% of all rows. Denominator-dependent but correct.
+3. **"train approved-only" → OVERCORRECTION for unsupervised score.** approved-only=38.7% retained vs is_valid=83.2%. Dropping unreviewed biases hotspots toward audited areas. **Decision: score on is_valid; approved-only kept as a sensitivity check.**
+4. **"midnight enforcement spike, weight overnight" → REFUTED (timezone artifact).** Numbers were raw UTC; UTC peak 05:00 = **IST 10:00** (morning); UTC 14:00 = IST 19:30 (the known dead window). True IST peak = 10:00; overnight 22–06 IST = 40.9% vs morning 08–12 = 46.0%. Gate 3 stands: enforcement-timing not congestion-timing; do NOT up-weight overnight.

@@ -83,18 +83,30 @@ durable memory — **trust the files, not your recollection.**
 - **[docs/DATASET.md](docs/DATASET.md)** — the single source of truth for
   everything about the data. Read it before any data claim. Update it whenever
   you measure a new fact.
+- **[docs/JOURNAL.md](docs/JOURNAL.md)** — append-only, timestamped chronological
+  log of *what happened*: every experiment run + measured result, dead-ends, and
+  mid-task checkpoints. This is the black-box recorder and the **experiment
+  ledger** — every metric you report must have a row here with the command that
+  produced it. Append a breadcrumb after every meaningful step, especially before
+  stopping mid-task, so a fresh session can resume exactly where you were.
 - **[docs/DECISIONS.md](docs/DECISIONS.md)** — append-only log of every
   meaningful technical decision and *why*. Before re-opening a settled question,
   read this. Add an entry whenever you make a choice that future-you would
   otherwise re-litigate.
-- **[docs/PROGRESS.md](docs/PROGRESS.md)** — current state, what's done, what's
-  next, known issues. Read at session start; update at session end (or after any
-  milestone).
+- **[docs/PROGRESS.md](docs/PROGRESS.md)** — current-state **snapshot** (what's
+  done, next, known issues), refreshed *from* JOURNAL.md. Read at session start;
+  update at session end or after any milestone. It is overwritten, so it holds no
+  history — the history lives in JOURNAL.md.
 
-**At the start of each working session:** skim PROGRESS.md → DECISIONS.md →
-DATASET.md. **Before claiming a data fact:** check DATASET.md. **After any
-decision or milestone:** write it down before moving on. Stale docs are a bug —
-if you notice a doc contradicts reality, fix the doc and note it.
+Roles, in one line each: **JOURNAL** = what happened (history) · **PROGRESS** =
+where we are now (snapshot) · **DECISIONS** = why (settled choices) ·
+**DATASET** = verified data facts.
+
+**At the start of each working session:** skim PROGRESS.md → JOURNAL.md (tail) →
+DECISIONS.md → DATASET.md. **Before claiming a data fact:** check DATASET.md.
+**Before reporting any metric:** it must trace to a JOURNAL.md run entry.
+**After any step, decision, or milestone:** write it down before moving on. Stale
+docs are a bug — if you notice a doc contradicts reality, fix the doc and note it.
 
 ---
 
