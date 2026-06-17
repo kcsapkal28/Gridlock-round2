@@ -148,3 +148,20 @@ Use one of the two templates below. Keep entries terse but self-contained.
 - Decision: EB smoothing + n>=50 ranking adopted (v2). Small-cell noise no longer dominates the headline.
 - State: cells 10/22/30 + scorelib updated; outputs+map regenerated. Next: IT2 supervised impact model.
 <!-- Append the next entry below this line. -->
+
+### 2026-06-18 — Remote kernel expired -> pivoted to LOCAL; IT2 supervised impact model
+- Context: Kaggle proxy token dead (HTTP 000) after the gap; remote /kaggle/working likely wiped.
+  Decision: rebuilt the whole pipeline LOCALLY (venv + local CSV) via `run_local.py` (rewrites
+  /kaggle paths). Local reproduces remote: cleaned 293,068 (vs 293,070; 2-row pandas-version dedup
+  tie, negligible), 5,492 cells, 313 sig, identical top zones. Gi* z magnitudes differ by libpysal
+  version but ranks/percentiles identical (score uses percentiles).
+- Did (IT2): LightGBM regressor predicting impact, spatial GroupKFold by gh5 (47 groups, 1,417 eval
+  cells n>=20), leakage-controlled (excluded impact/gi_z/gi_p/pca/impact_char/lat/lon).
+- Result (FACT — fe/cells/50_model_impact.py):
+  - Volume-only spatial-CV R2=**0.148** (Spearman 0.390) — volume poorly predicts impact (re-confirms volume!=impact).
+  - Cell-intrinsic (transferable, no spatial) R2=**0.337**, Spearman 0.633 — moderate held-out-region generalization.
+  - Full (with spatial lag/kde) R2=**0.980**, Spearman 0.989 — faithfully reproduces the score -> deployable scorer.
+  - Top drivers (gain): lag_sev_sum, lag_n, impact_intensity_total, kde_sev, heavy_share, mean_sev.
+  - Saved: fe_out/model_impact.txt (booster), importance.csv, oof.csv. Tracked copies in fe/artifacts/.
+- State: local pipeline fully working; model deliverable done. Next: IT3 hotspot-detection classifier.
+<!-- Append the next entry below this line. -->
