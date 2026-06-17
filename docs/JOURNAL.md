@@ -93,3 +93,24 @@ Use one of the two templates below. Keep entries terse but self-contained.
 - Next: confirm Round 2 metric; brainstorm + design the congestion-impact score; FE pipeline.
 
 <!-- Append the next entry below this line. -->
+
+### 2026-06-17 — FE score built (Gi*+PCA ensemble); validation caught volume-domination
+- Did: Built FE pipeline on remote kernel — fe_base (243,272 valid rows, 5,492 gh7 cells),
+  per-cell features + spatial-lag/KDE/interactions, Getis-Ord Gi* (294 sig cells, p<0.05),
+  PCA composite (PC1=volume 26.6%, severity orthogonal on PC2; blended to 39.0%),
+  ensemble impact + hand cross-check, full validation suite. Cells in `fe/cells/`.
+- Result (FACT — measured this session, cell `fe/cells/30_validate.py`):
+  - Temporal stability Spearman(half1,half2) = **0.768** (1,003 common cells) — marginal (<0.80).
+  - alpha grid: best **alpha=0.25** (stability-proxy 0.821).
+  - Approved-only sensitivity Spearman = **0.807** (PASS ≥0.75).
+  - Top-50 median distinct_devices = **48** (multi-device, robust).
+  - Concordance tau Gi*-PCA = 0.604, PCA-hand = 0.451, Gi*-hand = 0.265.
+  - **FACE VALIDITY FAILS: top-50 tier3_share lift = 0.56x, heavy_share lift = 0.19x.**
+    Top "impact" cells are BELOW average on carriageway-blocking → currently a VOLUME score.
+- Diagnosis (FACT): every ticket has Tier-2 floor → sev_sum≈2×count≈volume; Gi*(sev_sum) and
+  PCA-PC1 both volume-driven; severity/heavy signal washed out (loads on PC2).
+- Next: amend engine — steep severity weights {0:0,1:.5,2:1,3:6} → impact_intensity; Gi* on
+  impact_intensity; add explicit impact-character axis to ensemble; re-validate (face lift must flip >1x).
+- State: pipeline committed through 22_ensemble + 30_validate; fix pending user confirm.
+
+<!-- Append the next entry below this line. -->
