@@ -3,8 +3,8 @@ sys.path.insert(0,"/kaggle/working")
 import scorelib, importlib; importlib.reload(scorelib)
 from scorelib import ensemble_impact, impact_character, hand_composite, pct
 f=pd.read_parquet("/kaggle/working/cell_features_full.parquet")
-BETA=0.60  # blend weight Gi*-significance vs impact-character; selected in 30_validate
-           # (max temporal stability s.t. tier3_lift>=2 & heavy>=1)
+BETA=0.75  # blend weight Gi*-significance vs impact-character; selected in 30_validate
+           # (max ranked-cell stability s.t. tier3>=2.5 & heavy>=1.2; EB-smoothed rates, K=40)
 f["impact_char"]=impact_character(f)
 f["impact"]=ensemble_impact(f["gi_z"].values,f["impact_char"].values,beta=BETA)
 f["hand_score"]=hand_composite(f)

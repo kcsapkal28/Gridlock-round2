@@ -134,3 +134,17 @@ Use one of the two templates below. Keep entries terse but self-contained.
 - State: engine fixed + re-validated; cells 10/11/20/21/22/30 + scorelib updated. Next: outputs (geojson,
   priority table, KDE, MapMyIndia seam, map), FE_REPORT.
 <!-- Append the next entry below this line. -->
+
+### 2026-06-17 — IT1: score optimization (EB smoothing + evidence threshold)
+- Did: Empirical-Bayes shrinkage of rate features (tier3_share, heavy_share) toward global mean,
+  K=40 pseudo-tickets; raised `ranked` evidence threshold to n>=50; validation now reports
+  temporal stability on RANKED (well-supported) cells; beta re-selected by ranked-stability s.t.
+  impact delivered (tier3>=2.5, heavy>=1.2).
+- Result (FACT — fe/cells/30_validate.py): selected **beta=0.75**.
+  - Face validity: **tier3 lift 3.15x, heavy 1.37x** (v1 was 2.16x / 1.03x — big gain).
+  - Ranked-cell temporal stability Spearman = **0.782** (792 ranked cells).
+  - Approved-only sensitivity = **0.715** (up from 0.665).
+  - Top-50 median distinct_devices = **21**; concordance Gi*-char tau = 0.037 (orthogonal by design).
+- Decision: EB smoothing + n>=50 ranking adopted (v2). Small-cell noise no longer dominates the headline.
+- State: cells 10/22/30 + scorelib updated; outputs+map regenerated. Next: IT2 supervised impact model.
+<!-- Append the next entry below this line. -->

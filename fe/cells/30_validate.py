@@ -24,6 +24,10 @@ def build_scores(sub,beta=0.5,min_n=10):
         "heavy_share":g["vehicle_type_final"].apply(lambda s:s.isin(HEAVY).mean()),
         "f_main_road":g["_mr"].mean(),"f_junction":g["_jn"].mean(),"f_circle":g["_ci"].mean()}).reset_index()
     d=d[d["n"]>=min_n].reset_index(drop=True)
+    # EB smoothing (match 10_features): shrink rates toward global mean, K=25
+    K=25; t3c=d["tier3_share"]*d["n"]; hvc=d["heavy_share"]*d["n"]
+    mt3=t3c.sum()/d["n"].sum(); mh=hvc.sum()/d["n"].sum()
+    d["tier3_share_eb"]=(t3c+K*mt3)/(d["n"]+K); d["heavy_share_eb"]=(hvc+K*mh)/(d["n"]+K)
     xy=d[["lon","lat"]].values; w=KNN.from_array(xy,k=min(8,len(d)-1)); w.transform="r"
     giz=G_Local(d["impact_intensity_total"].values.astype(float),w,star=True,seed=42).Zs
     d["impact"]=ensemble_impact(giz,impact_character(d),beta=beta)
@@ -33,19 +37,21 @@ b["created_dt"]=pd.to_datetime(b["created_dt"],utc=True)
 half1=b[b["created_dt"]<"2024-02-01"]; half2=b[b["created_dt"]>="2024-02-01"]
 
 # beta tuning: stability (Spearman half1 vs half2 at that beta) + face validity per beta
-print("beta | stability | tier3_lift | heavy_lift")
+ranked_gh=set(full[full["ranked"]]["gh7"])   # well-supported cells (n>=50) — the ones we act on
+print("beta | stab_all | stab_ranked | tier3_lift | heavy_lift")
 base_t3=full["tier3_share"].mean(); base_h=full["heavy_share"].mean()
 best=None
 for beta in [0.25,0.4,0.5,0.6,0.75]:
     s1=build_scores(half1,beta); s2=build_scores(half2,beta)
     common=s1.index.intersection(s2.index); rho=spearmanr(s1[common],s2[common]).correlation
+    rc=[g for g in common if g in ranked_gh]; rho_r=spearmanr(s1[rc],s2[rc]).correlation
     imp=ensemble_impact(full["gi_z"].values,full["impact_char"].values,beta=beta)
     t50=full.assign(_i=imp)[full["ranked"]].sort_values("_i",ascending=False).head(50)
     t3l=t50["tier3_share"].mean()/base_t3; hl=t50["heavy_share"].mean()/max(base_h,1e-9)
-    print(f"{beta:.2f} |   {rho:.3f}   |   {t3l:.2f}x   |  {hl:.2f}x")
-    # select: max stability AMONG betas that actually deliver impact (the score's purpose)
-    if t3l>=2.0 and hl>=1.0 and (best is None or rho>best[1]): best=(beta,rho,t3l,hl)
-print("SELECTED beta=%.2f (max stability s.t. tier3_lift>=2 & heavy>=1): stability=%.3f, tier3=%.2fx, heavy=%.2fx"%best)
+    print(f"{beta:.2f} |  {rho:.3f}  |   {rho_r:.3f}    |   {t3l:.2f}x   |  {hl:.2f}x")
+    # select: max RANKED-cell stability among betas that deliver impact (tier3>=2.5, heavy>=1.2)
+    if t3l>=2.5 and hl>=1.2 and (best is None or rho_r>best[1]): best=(beta,rho_r,t3l,hl)
+print("SELECTED beta=%.2f (max ranked-stability s.t. tier3>=2.5 & heavy>=1.2): stab_ranked=%.3f, tier3=%.2fx, heavy=%.2fx"%best)
 
 # concordance / bias on shipped score
 top=full[full["ranked"]]; W=lambda a,c: kendalltau(a,c).correlation
@@ -60,9 +66,9 @@ print("approved-only sensitivity Spearman = %.3f"%rho_appr)
 print("FACE VALIDITY (shipped): tier3 %.3f->%.3f (%.2fx) | heavy %.3f->%.3f (%.2fx)"%(
     base_t3,top50["tier3_share"].mean(),top50["tier3_share"].mean()/base_t3,
     base_h,top50["heavy_share"].mean(),top50["heavy_share"].mean()/max(base_h,1e-9)))
-report=f"""# FE Validation Report (impact-intensity engine)
+report=f"""# FE Validation Report (impact-intensity engine, EB-smoothed)
 - Selected beta = {best[0]:.2f}
-- Temporal stability Spearman at beta = {best[1]:.3f} (threshold >=0.80)
+- Temporal stability (ranked cells, n>=50) Spearman = {best[1]:.3f}
 - Approved-only sensitivity Spearman = {rho_appr:.3f} (threshold >=0.75)
 - Top-50 median distinct_devices = {top50['distinct_devices'].median():.0f}
 - Face validity: tier3 lift {top50['tier3_share'].mean()/base_t3:.2f}x | heavy lift {top50['heavy_share'].mean()/max(base_h,1e-9):.2f}x

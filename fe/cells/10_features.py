@@ -48,7 +48,15 @@ feat=pd.DataFrame({
 # GUARD: cell counts sum to base rows; tier3_share in [0,1]
 assert feat["n"].sum()==len(b), "feature counts != base rows"
 assert feat["tier3_share"].between(0,1).all(), "tier3_share out of range"
-feat["ranked"]=feat["n_valid"]>=25
+# Empirical-Bayes shrinkage of small-cell rates toward the global mean (K pseudo-tickets):
+# reduces noise from tiny cells whose tier3/heavy rates are unreliable (improves stability).
+K_EB=40
+m_t3=feat["tier3_count"].sum()/feat["n"].sum()
+heavy_count=feat["heavy_share"]*feat["n"]
+m_h=heavy_count.sum()/feat["n"].sum()
+feat["tier3_share_eb"]=(feat["tier3_count"]+K_EB*m_t3)/(feat["n"]+K_EB)
+feat["heavy_share_eb"]=(heavy_count+K_EB*m_h)/(feat["n"]+K_EB)
+feat["ranked"]=feat["n_valid"]>=50   # headline ranking needs real evidence
 feat.to_parquet("/kaggle/working/cell_features.parquet")
 print("cells:",len(feat),"| ranked(>=25):",int(feat["ranked"].sum()))
 print(feat[["n","tier3_share","heavy_share","f_main_road"]].describe().round(3).to_string())

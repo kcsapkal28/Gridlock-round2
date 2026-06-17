@@ -4,10 +4,13 @@ def pct(s):  # percentile rank 0..1
     return pd.Series(s).rank(pct=True).values
 
 def impact_character(f):
-    """Volume-INDEPENDENT impact character: rates of carriageway-blocking / heavy / road-context."""
+    """Volume-INDEPENDENT impact character: rates of carriageway-blocking / heavy / road-context.
+    Prefers empirical-Bayes-smoothed rates (*_eb) when present (small-cell noise reduction)."""
+    t3 = f["tier3_share_eb"] if "tier3_share_eb" in f else f["tier3_share"]
+    hv = f["heavy_share_eb"] if "heavy_share_eb" in f else f["heavy_share"]
     road=(f["f_main_road"].values + f["f_junction"].values + f["f_circle"].values).clip(0,1) \
          if "f_circle" in f else (f["f_main_road"].values + f["f_junction"].values)
-    return (pct(f["tier3_share"]) + pct(f["heavy_share"]) + pct(road)) / 3.0
+    return (pct(t3) + pct(hv) + pct(road)) / 3.0
 
 def ensemble_impact(gi_z, char, beta=0.5):
     """Blend Gi* impact-significance (volume-aware) with impact-character (volume-independent)."""
