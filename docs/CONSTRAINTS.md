@@ -40,8 +40,11 @@ pull in a "helpful" external table, stop — it is forbidden, not a gap to fill.
 ### 🟢 ALLOWED EXTENSIONS
 - **Feature engineering & mathematical logic derived natively** from the given
   schema features.
-- **MapMyIndia API integration** (official navigation partner) for **routing,
-  geofencing, and location attributes** — permitted and encouraged.
+- **MapMyIndia API integration** — **mapping-infrastructure APIs ONLY**:
+  **Snap-to-Road, Distance Matrix, Routing, Geocoding** (incl. reverse-geocoding) permitted.
+  - **NOT permitted:** knowledge-enrichment APIs that inject external data —
+    **Places/Nearby, Live Traffic, Weather, Demographics** (external knowledge → same
+    disqualification spirit as the no-external-datasets rule).
   - Verify each endpoint/field exists before relying on it (anti-hallucination).
 
 ## Practical implications for our build

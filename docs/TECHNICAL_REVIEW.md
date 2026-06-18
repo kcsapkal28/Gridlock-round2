@@ -219,6 +219,10 @@ heavy-vehicle share, commercial share. Volume (`n`) alone is weak — consistent
 - **Honest caveat:** free-tier reverse-geocode returns street/locality, **not lane counts**, so exposure is
   a **heuristic**, not a measured capacity. Native `impact` remains primary; `impact_capacity` is an
   optional overlay.
+- **Rules compliance:** the only MapMyIndia API used is **reverse-geocoding (Geocoding)** — a permitted
+  mapping-infrastructure API. We use **no** knowledge-enrichment APIs (Places/Nearby, Live Traffic, Weather,
+  Demographics). The road-class signal is our own keyword heuristic on the geocoded street name, not an
+  external attributes lookup.
 
 ---
 
@@ -314,8 +318,9 @@ heavy-vehicle share, commercial share. Volume (`n`) alone is weak — consistent
 - **Calibrate detector probabilities** (isotonic) for honest hotspot probabilities.
 
 **Tier 3 — needs external inputs / larger lift**
-- **MapMyIndia depth:** enrich more cells as quota allows; probe nearby/places/routing for real road class;
-  **snap-to-road** for true segment-level units (#15).
+- **MapMyIndia depth (mapping-infra APIs only):** enrich more cells as quota allows; use **Snap-to-Road /
+  Routing** for real road class/geometry; **snap-to-road** for true segment-level units (#15). (Places/Nearby,
+  Live Traffic, Weather, Demographics are **off-limits** — knowledge enrichment.)
 - **Any near-ground-truth proxy** permissible under the rules (e.g., cross-checking top zones against
   publicly-known chronic junctions) to move beyond "internally consistent."
 - **Frontend / BTP console** (next phase).

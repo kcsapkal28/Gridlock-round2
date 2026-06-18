@@ -46,7 +46,8 @@ congestion-impact score + a prioritised enforcement map. No invented R² target.
   notebooks `gridlock_eda.ipynb` + `gridlock_fe.ipynb`; `mapmyindia_enrich.py` (key-gated).
 
 ## Next up ⏭️
-- [ ] **MapMyIndia access/key** — wire `mapmyindia_enrich.py` for road class/geofences + Mappls layer.
+- [ ] **MapMyIndia (mapping-infra APIs only)** — Geocoding (done) + optional Snap-to-Road/Routing for road
+      class; Mappls base-map layer. NO Places/Nearby/Traffic/Weather/Demographics (knowledge enrichment).
 - [ ] Frontend / full working system (per user — later).
 - [ ] Optional: road-segment unit as higher-fidelity enrichment once MapMyIndia is in.
 - [ ] Re-sync artifacts to Kaggle when a fresh proxy URL is available (paste new `.kaggle_url`).

@@ -18,7 +18,7 @@ spatial statistics + data-driven weighting, and selected/validated by temporal s
 - `cells.geojson` (+ gh6/gh5 rollups) — scored polygons for Mappls choropleth.
 - `priority_table.csv` — ranked top zones with component decomposition.
 - KDE severity raster/contours (`kde.*`) for map rendering.
-- `mapmyindia_enrich.py` — isolated optional enrichment seam (road class/width, junction geofences, map layer); pipeline runs fully without it.
+- `mapmyindia_enrich.py` — isolated optional enrichment seam using **Geocoding only** (reverse-geocode → street/road-class heuristic; optional Snap-to-Road/Routing later). Mapping-infra APIs only; pipeline runs fully without it.
 
 ---
 
@@ -117,8 +117,8 @@ length == cell count). Commit per cell.
 
 - Native-core; MapMyIndia is enrichment only (no key yet → pipeline must run without it).
 - Time-of-day excluded from the score (Gate 3: enforcement timing ≠ congestion timing).
-- `junction_name` is a workflow attribute, not geography → use `location`-text `f_junction` instead, and
-  reserve true junction geofences for the MapMyIndia seam.
+- `junction_name` is a workflow attribute, not geography → use `location`-text `f_junction` instead
+  (road geometry via Snap-to-Road/Routing is the sanctioned mapping-infra upgrade, not Places/geofence-knowledge).
 - `center_code` dropped (≈1:1 with `police_station`).
 - No external datasets; `pip install` of libraries (pygeohash, esda/libpysal already present) is permitted.
 

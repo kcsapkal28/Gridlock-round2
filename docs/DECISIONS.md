@@ -105,8 +105,8 @@
      ImpactScore = density × severity_tier × vehicle_size_weight ×
      road_capacity_context × junction_proximity. We have the first three; the
      road-capacity/class lever is the gap. Fill it with native `location`
-     road-class keywords + MapMyIndia road class / lanes / geofencing (the only
-     sanctioned enrichment, explicitly encouraged for this).
+     road-class keywords + MapMyIndia **mapping-infrastructure APIs only**
+     (Geocoding / Snap-to-Road / Routing — NOT Places/Nearby/Traffic/Weather; see ADR-007).
 - Reasoning: Aligns the build with how it will actually be evaluated and with the
   literal problem statement; avoids the two drift risks (leaderboard-style
   modeling, and a severity-only "impact" that a BTP panel would rightly question).
@@ -163,3 +163,18 @@ Kaggle proxy token expired (unreachable).
   layer; native `impact` remains the primary, robust score.
 - Validation: capacity layer re-ranks Outer Ring Road (arterial) cells to the top — face-valid for "flow impact".
 **Status:** Accepted. Secrets gitignored. Evidence: JOURNAL 2026-06-18.
+
+## ADR-007 — MapMyIndia: mapping-infrastructure APIs only (no knowledge enrichment)
+**Context:** Clarified rule (2026-06-18): MapMyIndia may be used only as *mapping infrastructure*, not as a
+source of external knowledge.
+**Decision:**
+- **Allowed:** Snap-to-Road, Distance Matrix, Routing, **Geocoding** (incl. reverse-geocoding), base-map tiles/SDK.
+- **Prohibited:** Places/Nearby, Live Traffic, Weather, Demographics (external knowledge → disqualification spirit).
+**Audit result (FACT):** the only MapMyIndia call in executable code is `rev_geocode` (Geocoding) in
+`mapmyindia_enrich.py` → **compliant**. No banned API is called anywhere. Violations were doc-only forward-
+looking text ("probe nearby/places", "geofences", "location attributes") — cleaned this session across
+CLAUDE.md, CONSTRAINTS.md, PROGRESS.md, TECHNICAL_REVIEW.md, both specs. The `road_class`/`road_exposure`
+signal is our own keyword heuristic on the geocoded street name (not an attributes/places lookup) → compliant.
+**Model impact:** none. Reverse-geocode only feeds the optional `impact_capacity` overlay; the native score
+and both ML models are unchanged.
+**Status:** Accepted.

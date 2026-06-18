@@ -113,6 +113,14 @@ local demo (documented; add API-key middleware later for cloud).
 - **Determinism:** fixed seeds; tests use a tiny fixture `cell_scores` slice, not the full parquet.
 - **No live API calls in tests** — Mappls fully mocked (protects free tier).
 
+## 7a. MapMyIndia rules compliance
+
+This API uses **mapping-infrastructure APIs only**: `/mappls/revgeocode` = **Geocoding** (allowed);
+`/mappls/token` = base-map **tiles/SDK** (mapping rendering, allowed), with Carto fallback. We use **no**
+knowledge-enrichment APIs — **Places/Nearby, Live Traffic, Weather, Demographics are prohibited** and must
+never be added to `api/mappls.py`. Road-class signals come from our own heuristic on geocoded street names
+or (future) Snap-to-Road/Routing — never a places/attributes knowledge lookup. See ADR-007.
+
 ## 8. Non-goals (YAGNI)
 
 - Auth/multi-tenant (local demo). DB/persistence (parquet + static files suffice). Real-time streaming.

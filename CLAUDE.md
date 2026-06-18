@@ -136,8 +136,11 @@ docs are a bug — if you notice a doc contradicts reality, fix the doc and note
   weather, event, or traffic logs. Features must be engineered natively from the
   given schema. This is also an anti-hallucination rule: do not "remember" a
   helpful external table — it is forbidden. See [docs/CONSTRAINTS.md](docs/CONSTRAINTS.md).
-- **MapMyIndia APIs are the only sanctioned enrichment** (routing, geofencing,
-  road/location attributes). Verify each endpoint before relying on it.
+- **MapMyIndia: mapping-infrastructure APIs ONLY.** Allowed = **Snap-to-Road,
+  Distance Matrix, Routing, Geocoding** (incl. reverse-geocoding). **NOT allowed** =
+  knowledge-enrichment APIs that add external data: **Places/Nearby, Live Traffic,
+  Weather, Demographics** (external knowledge → disqualification risk, same spirit as
+  the no-external-datasets rule). Verify each endpoint before relying on it.
 
 ---
 
