@@ -8,9 +8,9 @@
 _Last updated: 2026-06-18 (post-models v2)_
 
 ## Current phase
-**Model complete: impact score v2 + supervised impact & detection models, evaluated.**
-Running LOCALLY (Kaggle token expired — `run_local.py` rebuilds from CSV; local==remote).
-Next: MapMyIndia enrichment (needs key) + frontend/system (later, per user).
+**Model + communication layer complete.** Impact score v2 + supervised impact & detection
+models (evaluated); MapMyIndia capacity layer (Geocoding only, compliant); **FastAPI
+communication layer with fallbacks (19/19 tests, live-verified)**. Next: frontend UI.
 
 ## Done ✅
 - Profiled the dataset; verified facts in [DATASET.md](DATASET.md).
@@ -45,9 +45,15 @@ congestion-impact score + a prioritised enforcement map. No invented R² target.
 - Outputs: `cells.geojson`, `impact_map.html`, `priority_table.csv`, rollups, KDE, model boosters;
   notebooks `gridlock_eda.ipynb` + `gridlock_fe.ipynb`; `mapmyindia_enrich.py` (key-gated).
 
+## Done (API) ✅
+- `api/` FastAPI: health/score/zone/revgeocode; versioned `/api/v1`, OpenAPI, X-Request-ID, error envelope.
+- Fallbacks: score grid→nearest; mappls cache→live→fallback + circuit breaker; roadclass snap(gated)→geocode.
+- Static bundle + manifest (`web/public/data`); 19/19 tests; live smoke green. Spec/plan in `docs/superpowers/`.
+
 ## Next up ⏭️
-- [ ] **MapMyIndia (mapping-infra APIs only)** — Geocoding (done) + optional Snap-to-Road/Routing for road
-      class; Mappls base-map layer. NO Places/Nearby/Traffic/Weather/Demographics (knowledge enrichment).
+- [ ] **Frontend UI** (reads static bundle + calls `/api/v1`).
+- [ ] **Phase-8 API follow-ups:** `/mappls/token` + Carto fallback, `/mappls/*` rate-limit, off-grid LightGBM in `/score`.
+- [ ] **MapMyIndia (mapping-infra only):** Snap-to-Road/Routing road class if a tier supports it (412 on free).
 - [ ] Frontend / full working system (per user — later).
 - [ ] Optional: road-segment unit as higher-fidelity enrichment once MapMyIndia is in.
 - [ ] Re-sync artifacts to Kaggle when a fresh proxy URL is available (paste new `.kaggle_url`).
