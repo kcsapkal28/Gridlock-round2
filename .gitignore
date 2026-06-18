@@ -7,3 +7,5 @@ __pycache__/
 fe_work/
 .mappls_secrets
 .mappls_cache/
+web/public/data/*
+!web/public/data/.gitkeep
