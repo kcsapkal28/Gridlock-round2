@@ -14,6 +14,13 @@ log (293k cleaned rows, `is_valid` filter, EB-smoothed rates):
    - Getis-Ord Gi* (PySAL) gives statistically significant impact hotspots (313 cells at p<0.05).
 2. **Impact regression model (LightGBM)** — predicts the score from cell features; serves/generalizes scoring.
 3. **Hotspot-detection classifier (LightGBM)** — flags top-quartile impact-hotspots probabilistically.
+4. **MapMyIndia capacity layer (enrichment, optional)** — reverse-geocodes top cells to authoritative
+   street/locality and applies a road-type **exposure** weight `{arterial/highway 1.5, main road 1.35,
+   cross/junction 1.2, local 1.0}` → `impact_capacity = impact × exposure`. Native `impact` stays primary;
+   this layer adds the "flow capacity" dimension. `FACT:` it re-ranks **Outer Ring Road** (Marathahalli/
+   Kadubisanahalli/Mahadevapura) corridor cells to the top — illegal parking on a high-capacity arterial
+   has outsized flow impact. `CAVEAT:` free-tier rev_geocode gives street/locality, not lane counts, so
+   exposure is a **heuristic**, not measured capacity.
 
 ## Evaluation (spatial GroupKFold by gh5 — held-out regions)
 | Model | Metric | Volume-only | Cell-intrinsic | Full |
@@ -44,11 +51,14 @@ Neighborhood severity (`lag_sev_sum`), `impact_intensity`, KDE severity, `heavy_
 - **Not** a measured congestion outcome — there is no ground-truth flow label; the score is a
   defensible proxy from enforcement data.
 - Timestamps reflect enforcement scheduling, not congestion timing → time-of-day excluded.
-- `junction_name`/`center_code` excluded (workflow artifact / redundant); road precision deferred to
-  MapMyIndia enrichment (`mapmyindia_enrich.py`, key-gated).
+- `junction_name`/`center_code` excluded (workflow artifact / redundant).
+- MapMyIndia capacity layer is a road-type **heuristic** (street-name based), not lane-level data;
+  applied to top-50 cells (free-tier budget), cached in `.mappls_cache/`.
 - Stability capped (~0.78) by the real Feb enforcement-volume regime change.
 
 ## Artifacts
 `fe_out/model_impact.txt`, `model_detect.txt` (LightGBM boosters), `*_importance.csv`, `*_oof.csv`;
-score outputs in `fe_out/`; tracked copies in `fe/artifacts/`. Reproduce: `gridlock_fe.ipynb`
-(Kaggle) or `python run_local.py fe/cells/*.py` (local).
+score outputs in `fe_out/` (`cells.geojson`, `priority_table.csv`, rollups, `kde_points.csv`,
+`impact_map.html`); MapMyIndia layer `fe_out/top_enriched.{csv,geojson}`; tracked copies in
+`fe/artifacts/`. Reproduce: `gridlock_fe.ipynb` (Kaggle) or `python run_local.py fe/cells/*.py` (local);
+enrichment via `python mapmyindia_enrich.py 50`.

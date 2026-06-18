@@ -61,7 +61,9 @@ Tier-3, ~30–43% heavy) **and** high-volume statistically-significant cells (#3
 - `cells.geojson` (5,492 scored polygons) — Mappls choropleth-ready.
 - `impact_map.html` — folium choropleth of 1,229 ranked cells + top-15 markers.
 - `priority_table.csv` (top-100), `rollup_gh6.csv` / `rollup_gh5.csv` (zoom levels), `kde_points.csv`.
-- `mapmyindia_enrich.py` — optional road-name/geofence enrichment (no-op without `MAPPLS_TOKEN`).
+- `mapmyindia_enrich.py` — MapMyIndia capacity layer (top-50, cached): `top_enriched.{csv,geojson}`
+  with authoritative street/locality + `road_exposure` + `impact_capacity = impact × exposure`.
+  Capacity-adjusted top is the **Outer Ring Road** arterial corridor. (Road-type heuristic, not lanes.)
 
 ## Honest limitations
 - Temporal stability ~0.77 (not 0.80): the Feb enforcement-volume drop genuinely reshuffles
