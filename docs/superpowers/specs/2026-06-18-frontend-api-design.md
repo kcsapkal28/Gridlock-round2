@@ -34,6 +34,9 @@ local demo (documented; add API-key middleware later for cloud).
 - `api/schemas.py` — Pydantic request/response models (the typed contract).
 - `api/scoring.py` — `ScoringService`: load `cell_scores` + boosters once; `score(lat,lon)` with fallback chain.
 - `api/mappls.py` — `MapplsClient`: cached + rate-limited + circuit-broken proxy; token minting; reuses `.mappls_cache/`.
+- `api/roadclass.py` — `road_class(lat,lon)` with a **fallback chain** (Snap-to-Road → Routing → geocoding
+  street-name heuristic). Flag-gated + probe-activated (Snap-to-Road returns 412 on the current free-tier
+  key, so it is OFF by default; the geocoding heuristic is the active path). Mapping-infra APIs only.
 - `api/artifacts.py` — `build_static(out_dir)`: generate the static JSON bundle + `manifest.json` from `fe_work/fe_out/`.
 - `api/config.py` — env-driven settings (paths, CORS origins, timeouts, breaker thresholds).
 - `api/tests/` — pytest unit + contract tests (incl. forced-failure fallback tests).
@@ -88,6 +91,10 @@ local demo (documented; add API-key middleware later for cloud).
   cooldown. State exposed via `/health.mappls`.
 - **`/mappls/token`:** OAuth token **cached server-side** (~24h), refreshed proactively at 90% TTL; if OAuth
   is down → `{token:null, fallback_basemap:"carto"}` so the frontend renders on **OSM/Carto tiles**.
+- **Road-class enrichment** (`roadclass.road_class`): **Snap-to-Road** (if `ROADCLASS_SNAP=on` and a startup
+  probe returns 200) → **Routing** road-name → **geocoding street-name heuristic** (`road_exposure`) →
+  `road_class:"unknown", exposure:1.0`. Verified status: Snap-to-Road = 412 on free tier → chain starts at
+  the geocoding heuristic today; no behavior change to the shipped `impact_capacity`.
 - **Rate limiting:** token-bucket on `/mappls/*` (default 60/min) to protect the free tier; over-limit → 429
   with the error envelope.
 - **Bounded everything:** 5s outbound timeouts, ≤1 retry, no unbounded waits.
@@ -119,7 +126,8 @@ This API uses **mapping-infrastructure APIs only**: `/mappls/revgeocode` = **Geo
 `/mappls/token` = base-map **tiles/SDK** (mapping rendering, allowed), with Carto fallback. We use **no**
 knowledge-enrichment APIs — **Places/Nearby, Live Traffic, Weather, Demographics are prohibited** and must
 never be added to `api/mappls.py`. Road-class signals come from our own heuristic on geocoded street names
-or (future) Snap-to-Road/Routing — never a places/attributes knowledge lookup. See ADR-007.
+or Snap-to-Road/Routing (mapping-infra, fallback-chained, currently gated off — 412 on free-tier) — never a
+places/attributes knowledge lookup. See ADR-007.
 
 ## 8. Non-goals (YAGNI)
 

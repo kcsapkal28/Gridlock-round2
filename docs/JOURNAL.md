@@ -215,3 +215,12 @@ Use one of the two templates below. Keep entries terse but self-contained.
   concentration leg dominates; impact-character leg is weight-invariant). Ambiguity #6 (TECHNICAL_REVIEW)
   RESOLVED. Credibility win.
 <!-- Append the next entry below this line. -->
+
+### 2026-06-18 — MapMyIndia Snap-to-Road probe (for road-class upgrade)
+- Did: tested Snap-to-Road on the REST key (2 calls, ORR corridor path), documented params + geometries.
+- Result (FACT): both returned HTTP **412 {"msg":"Parameter missing","error":"Invalid parameter"}** — not
+  auth (401/403), not param (tried 2 formats). Conclusion: snapToRoad is **not available on this free-tier
+  REST key** (tier-restricted or OAuth/atlas-base only). Reverse-geocode (Geocoding) remains the verified path.
+- Decision: road-class enrichment designed as a FALLBACK CHAIN — Snap-to-Road/Routing when available
+  (flag-gated, probe-activated), else verified Geocoding street-name heuristic. No model impact; compliant.
+<!-- Append the next entry below this line. -->
