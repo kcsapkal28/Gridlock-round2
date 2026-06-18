@@ -202,3 +202,16 @@ Use one of the two templates below. Keep entries terse but self-contained.
 - Caveat: free tier rev_geocode gives street/locality only -> capacity is a road-type HEURISTIC, not lane data.
 - Secrets in .mappls_secrets (gitignored); cache .mappls_cache/ (gitignored).
 <!-- Append the next entry below this line. -->
+
+### 2026-06-18 — Severity-weight sensitivity study (Tier-1 optimization)
+- Did: perturbed scoring weights across 13 configs (Tier-3 wt 3->10, heavy mult off->3x, Tier-2 floor
+  0.5/1.5, Tier-1 0/1, + extreme & flat combos); reused one KNN weights object across all (efficiency).
+  Recomputed impact_intensity -> Gi* -> ensemble per config; compared ranking to shipped baseline.
+  (fe/cells/52_sensitivity.py; fe/artifacts/sensitivity.csv)
+- Result (FACT): ranking highly robust to weights — **Spearman vs baseline min 0.985 / mean 0.995**;
+  **top-50 overlap min 42/50 (84%) / mean 46.1**; top-20 min 17/20. Holds even at extreme (w3=10,hm=3)
+  and near-flat (w3=3, heavy off) settings.
+- Conclusion: hotspot ranking is NOT an artifact of hand-chosen severity weights (Gi* spatial-
+  concentration leg dominates; impact-character leg is weight-invariant). Ambiguity #6 (TECHNICAL_REVIEW)
+  RESOLVED. Credibility win.
+<!-- Append the next entry below this line. -->

@@ -268,8 +268,11 @@ heavy-vehicle share, commercial share. Volume (`n`) alone is weak — consistent
    never see those false negatives.
 
 **Ambiguities / unjustified-by-data choices (judgment calls)**
-6. **Severity tier weights `{0, .5, 1, 6}` and vehicle multipliers `{2.0, 1.3}` are hand-set**, not derived.
-   Their **sensitivity is untested** — this is the most important open analysis.
+6. ~~**Severity tier weights are hand-set; sensitivity untested.**~~ **RESOLVED (2026-06-18):** a 13-config
+   sensitivity study (Tier-3 weight 3→10, heavy multiplier off→3×, Tier-2 floor, Tier-1) shows the ranking
+   is **highly stable** — Spearman vs baseline **≥0.985** (mean 0.995), top-50 overlap **≥84%**, even under
+   extreme re-weightings. The result is not an artifact of the chosen weights. (`fe/cells/52_sensitivity.py`,
+   `fe/artifacts/sensitivity.csv`.)
 7. **β = 0.75, EB K = 40** are selected/chosen, not exhaustively tuned.
 8. **road_exposure weights are heuristic** (street-name based).
 9. **Cell vs region:** we report individual cells as the headline, but the top cells have small n (87–94);
@@ -298,8 +301,8 @@ heavy-vehicle share, commercial share. Volume (`n`) alone is weak — consistent
 ## 11. Optimizations & Betterments (prioritized roadmap)
 
 **Tier 1 — high value, low effort, fully native (do next)**
-- **Severity-weight sensitivity study.** Perturb tier weights & multipliers; confirm the *ranking* is
-  stable. Directly answers the biggest ambiguity (#6) and hardens credibility for judges.
+- ✅ **Severity-weight sensitivity study — DONE.** Ranking stable across 13 re-weightings (Spearman ≥0.985,
+  top-50 overlap ≥84%). Ambiguity #6 resolved.
 - **Export richer per-cell fields** to GeoJSON (#16) for meaningful frontend popups.
 - **Region-first reporting** — lead with geohash-6 rollups for stability, drill down to cells (#9).
 - **Normalize `impact_capacity`** to 0–100 (#14).
