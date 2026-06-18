@@ -188,3 +188,17 @@ Use one of the two templates below. Keep entries terse but self-contained.
 - State: MODEL DELIVERABLE COMPLETE (score v2 + impact regression + hotspot detector, evaluated &
   documented). Pending external: fresh Kaggle URL to re-sync; MapMyIndia key; frontend (later).
 <!-- Append the next entry below this line. -->
+
+### 2026-06-18 — MapMyIndia keys verified + top-50 enrichment
+- Keys (FACT, 2 test calls): OAuth client_credentials -> 200 (access_token, ~24h); REST key rev_geocode
+  -> 200 (returns street/subLocality/locality, NOT lanes). Chose REST-key-in-path (no token lifecycle).
+- Built mapmyindia_enrich.py: disk-cached (.mappls_cache/, re-runs=0 calls), top-50 ranked cells,
+  rev_geocode -> authoritative street; road-exposure heuristic {arterial/highway 1.5, main road 1.35,
+  cross/junction 1.2, local 1.0}; impact_capacity = impact x exposure (optional layer; native impact primary).
+- Result (FACT, 50 calls, cached): capacity-adjusted top-12 are ALL **Outer Ring Road** cells
+  (Marathahalli/Kadubisanahalli/Devara Beesana Halli/Mahadevapura) — the ORR IT corridor. Mappls street
+  names surfaced arterial classification beyond native location text. Outputs: fe_out/top_enriched.csv,
+  top_enriched.geojson; tracked copy fe/artifacts/top_enriched.csv.
+- Caveat: free tier rev_geocode gives street/locality only -> capacity is a road-type HEURISTIC, not lane data.
+- Secrets in .mappls_secrets (gitignored); cache .mappls_cache/ (gitignored).
+<!-- Append the next entry below this line. -->

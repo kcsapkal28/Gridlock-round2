@@ -152,3 +152,14 @@ Kaggle proxy token expired (unreachable).
 - **Score remains the primary product**; models serve generalization, feature-importance, and a fast
   scorer for future MapMyIndia/road-feature and new-area scoring.
 **Status:** Accepted. Evidence: JOURNAL 2026-06-18; `fe/findings/MODEL_CARD.md`.
+
+## ADR-006 — MapMyIndia enrichment: REST key, top-N cached, road-type heuristic
+**Context:** Free-tier Mappls; both auth methods verified (OAuth 200, REST key rev_geocode 200).
+**Decisions:**
+- Use **REST key in URL path** for rev_geocode (no token lifecycle). OAuth pair available as fallback.
+- **Frugality:** enrich only top-50 ranked cells; disk-cache by gh7 (.mappls_cache/) so re-runs cost 0 calls.
+- rev_geocode yields street/locality, NOT lanes -> **road-exposure is a heuristic** from street type, not
+  a true capacity/lane feature (stated honestly). `impact_capacity = impact x exposure` is an OPTIONAL
+  layer; native `impact` remains the primary, robust score.
+- Validation: capacity layer re-ranks Outer Ring Road (arterial) cells to the top — face-valid for "flow impact".
+**Status:** Accepted. Secrets gitignored. Evidence: JOURNAL 2026-06-18.
