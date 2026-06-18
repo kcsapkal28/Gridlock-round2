@@ -224,3 +224,17 @@ Use one of the two templates below. Keep entries terse but self-contained.
 - Decision: road-class enrichment designed as a FALLBACK CHAIN — Snap-to-Road/Routing when available
   (flag-gated, probe-activated), else verified Geocoding street-name heuristic. No model impact; compliant.
 <!-- Append the next entry below this line. -->
+
+### 2026-06-18 — Frontend communication layer (FastAPI + fallbacks) BUILT
+- Did: implemented the API per spec/plan — api/ package: config, geo, scoring (grid->nearest fallback),
+  mappls (cache + circuit breaker + fallback), roadclass (snap->geocode chain, gated), artifacts (static
+  bundle + manifest), schemas (Pydantic), main (FastAPI: health/score/zone/revgeocode, request-id, error
+  envelope, CORS). TDD throughout.
+- Result (FACT): **19/19 tests pass**. Static bundle built (zones 5492, ranked 792). Live smoke test:
+  /health {model_loaded:true, mappls:live}; /score (12.997,77.669)->gh7 tdr1zqh impact 99.14 rank 48
+  source grid; /openapi.json 200.
+- Compliance: only Geocoding (rev_geocode) used; snap-to-road gated off (412 free tier). ADR-007 honored.
+- Deferred (Phase-8, documented in plan self-review): /mappls/token + Carto fallback, /mappls/* rate-limit,
+  off-grid LightGBM inference in /score.
+- State: API layer complete & verified. Next: frontend UI, or Phase-8 follow-ups.
+<!-- Append the next entry below this line. -->
