@@ -8,9 +8,10 @@
 _Last updated: 2026-06-18 (post-models v2)_
 
 ## Current phase
-**Model + communication layer complete.** Impact score v2 + supervised impact & detection
-models (evaluated); MapMyIndia capacity layer (Geocoding only, compliant); **FastAPI
-communication layer with fallbacks (19/19 tests, live-verified)**. Next: frontend UI.
+**END-TO-END PROTOTYPE COMPLETE.** Model (impact score v2 + intrinsic ML models) + RCP flow-delay +
+FastAPI (fallbacks, 24 tests) + **dual-persona Deck.gl frontend** (BTP console + Flipkart logistics
+impedance/detour), taste + impeccable refined, screenshot/log-verified. Run: uvicorn `api.main:app`
+:8011 + `npm --prefix web run dev` :5173.
 
 ## Done ✅
 - Profiled the dataset; verified facts in [DATASET.md](DATASET.md).
