@@ -262,3 +262,14 @@ Use one of the two templates below. Keep entries terse but self-contained.
   §5.2 parallel batch (free-tier safety), §1.4 downcast (no memory pressure). §4.1 snap-to-road BLOCKED (412).
 - Next: §4.2 Routing-Cost-Penalty delay loop (Distance Matrix VERIFIED 200) as its own focused piece.
 <!-- Append the next entry below this line. -->
+
+### 2026-06-18 — Routing Cost Penalty (RCP) flow-impact loop (checklist §4.2)
+- Did: rcp.py — per top corridor, MapMyIndia Distance Matrix (mapping-infra) gives free-flow T_base;
+  capacity_reduction=min(0.6, 0.10+0.35*tier3_share+0.20*heavy_share); delay_min=T_base*cap/(1-cap).
+  Disk-cached (dm_{gh7}.json); pure math unit-tested.
+- Result (FACT, 12 corridors, 12 new DM calls then cached): delay range 1.35–11.02 min. Top: tdr3858
+  (95% Tier-3) = **11.0 min**, tdr1zmv (heavy 31%) = 7.7 min. Outputs rcp.csv/rcp.geojson; in static bundle.
+- Significance: first MEASURED "impact on traffic flow" (minutes), not a proxy — directly answers the PS.
+- Compliance: Distance Matrix = mapping infra (routing baseline, NOT live traffic). 21/21 API tests pass.
+- Caveat: capacity-reduction is a documented heuristic; O/D geometry approximates the corridor (snap-to-road 412).
+<!-- Append the next entry below this line. -->

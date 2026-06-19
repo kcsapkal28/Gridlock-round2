@@ -37,6 +37,7 @@ then `python mapmyindia_enrich.py 50` (local).
 | `cells.geojson` | 5,492 polygons | **Choropleth heatmap** of impact (props: impact, rank, n, tier3_share, heavy_share, gi_z, ranked) |
 | `priority_table.csv` | top 100 | **Ranked enforcement list** with decomposition |
 | `top_enriched.geojson` | top 50 | **Markers/popups** with street name, locality, road_class, `impact_capacity`, capacity-rank |
+| `rcp.geojson` | top 12 | **Flow-impact callouts**: measured `delay_min` (e.g. 11 min), `t_base_s`, `capacity_reduction` |
 | `rollup_gh6.csv` / `rollup_gh5.csv` | 785 / 59 | **Zoom-level aggregation** (district/area view) |
 | `kde_points.csv` | 5,492 | Smooth **severity surface** / contour layer |
 | `validation_report.md` + `MODEL_CARD.md` | — | **Methodology / "how it works" panel** |

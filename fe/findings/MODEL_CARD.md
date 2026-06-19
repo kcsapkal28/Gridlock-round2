@@ -22,6 +22,13 @@ log (293k cleaned rows, `is_valid` filter, EB-smoothed rates):
    has outsized flow impact. `CAVEAT:` free-tier rev_geocode gives street/locality, not lane counts, so
    exposure is a **heuristic**, not measured capacity.
 
+5. **Routing Cost Penalty (RCP) — measured flow impact.** For top corridors, MapMyIndia **Distance Matrix**
+   (mapping-infra, allowed) gives the free-flow drive time `T_base`; a data-derived capacity-reduction
+   (Tier-3 + heavy share) yields `delay_min = T_base · cap/(1−cap)`. `FACT:` top corridor `tdr3858` (95%
+   Tier-3) = **11.0 min** added delay; range 1.3–11.0 min over 12 corridors. This is the literal "quantify
+   impact on traffic flow" answer in minutes. `CAVEAT:` capacity-reduction is a documented heuristic;
+   O/D geometry approximates the corridor (Snap-to-Road for exact link IDs is gated/412 on free tier).
+
 ## Evaluation (spatial GroupKFold by gh5 — held-out regions)
 | Model | Metric | Volume-only | Cell-intrinsic | Full |
 |------|--------|------------|----------------|------|
