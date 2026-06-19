@@ -238,3 +238,14 @@ Use one of the two templates below. Keep entries terse but self-contained.
   off-grid LightGBM inference in /score.
 - State: API layer complete & verified. Next: frontend UI, or Phase-8 follow-ups.
 <!-- Append the next entry below this line. -->
+
+### 2026-06-18 — Proto-validation audit (external checklist)
+- Verified (FACT): pipeline reads ONLY the organizer CSV + mappls rev_geocode (no shp/scrape/traffic) →
+  data + enrichment compliant. Dedup is on vehicle+coord+minute (NOT id; id is unique) with NO pre-sort →
+  source of the 2-row drift. cells.geojson props = [gh7,impact,rank,n,tier3_share,heavy_share,gi_z,ranked]
+  (missing vehicle/infraction context). impact_capacity range 98.29–149.67 (UNBOUNDED >100). closed_datetime
+  & action_taken_timestamp 100% null → clearance-latency NOT computable.
+- **MapMyIndia Distance Matrix API VERIFIED (FACT, 1 call): HTTP 200**, results.distances [[0,1807.9]] m,
+  durations [[0,238.5]] s. → Routing-Cost-Penalty flow-delay quantification is FEASIBLE (allowed mapping-infra).
+- Snap-to-Road still 412 (blocked, free tier).
+<!-- Append the next entry below this line. -->
