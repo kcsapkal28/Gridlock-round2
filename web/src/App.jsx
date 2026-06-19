@@ -56,8 +56,9 @@ export default function App() {
         </div>
         <div className="spacer" />
         <div className="health">
-          API {health ? <b>online</b> : <span style={{ color: "var(--warn)" }}>static-only</span>}
-          {health && <> · model {health.model_loaded ? "✓" : "—"} · mappls {health.mappls}</>}
+          {health ? <span className="live-dot" /> : null}
+          API {health ? "ONLINE" : <span style={{ color: "var(--warn)" }}>STATIC-ONLY</span>}
+          {health && <> · MODEL {health.model_loaded ? "✓" : "—"} · MAPPLS {health.mappls.toUpperCase()}</>}
         </div>
       </div>
 

@@ -39,7 +39,7 @@ export default function BTPSidebar({ stats, tops, rcp, selected, onSelect }) {
       {(tops || []).slice(0, 40).map((z) => (
         <div key={z.gh7} className={"card" + (z.gh7 === selected ? " sel" : "")} onClick={() => onSelect(z)}>
           <div className="row">
-            <span className="name">#{z.rank} · {z.gh7}</span>
+            <span className="name">#{z.rank} · <span className="mono">{z.gh7}</span></span>
             <span className="score" style={{ color: "var(--warn)" }}>{(+z.impact).toFixed(0)}</span>
           </div>
           <div className="meta">

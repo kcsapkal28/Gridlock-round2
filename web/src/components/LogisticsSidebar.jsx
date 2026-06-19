@@ -50,7 +50,7 @@ export default function LogisticsSidebar({ route, busy, onAnalyze }) {
           {(route.affected_cells || []).slice(0, 12).map((c) => (
             <div key={c.gh7} className="card">
               <div className="row">
-                <span className="name">{c.gh7}</span>
+                <span className="name mono">{c.gh7}</span>
                 <span className="score" style={{ color: "var(--hot)" }}>{c.delay_min.toFixed(1)} min</span>
               </div>
               <div className="meta">{c.primary_infraction_type || "parking"} · {c.dominant_vehicle_class || "mixed"} · impact {c.impact}</div>
