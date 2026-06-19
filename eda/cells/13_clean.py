@@ -1,12 +1,18 @@
 import pandas as pd, numpy as np
 df = pd.read_parquet("/kaggle/working/raw.parquet")
 n0=len(df)
+# Determinism guard (fixes local/Kaggle 2-row drift): sort by the unique `id` BEFORE any
+# drop_duplicates, so which row survives among near-dups is identical in every environment.
+df = df.sort_values("id", kind="mergesort").reset_index(drop=True)
 for c in ["latitude","longitude"]: df[c]=pd.to_numeric(df[c],errors="coerce")
 df["created_dt"]=pd.to_datetime(df["created_datetime"],errors="coerce",utc=True)
 
-# duplicate key: same vehicle, same ~location (5dp), same minute
-df["_dupkey"]=(df["vehicle_number"].astype(str)+"|"+df["latitude"].round(5).astype(str)
-              +"|"+df["longitude"].round(5).astype(str)+"|"+df["created_dt"].dt.floor("min").astype(str))
+# duplicate key: same vehicle, same ~location (5dp), same minute.
+# Explicit fixed-width formatting (NOT .astype(str)) so the key is identical across pandas/numpy
+# versions -> eliminates the local/Kaggle row-count drift (sorting alone only fixes which row survives).
+df["_dupkey"]=(df["vehicle_number"].astype(str)+"|"+df["latitude"].map(lambda x:f"{x:.5f}")
+              +"|"+df["longitude"].map(lambda x:f"{x:.5f}")+"|"
+              +df["created_dt"].dt.strftime("%Y-%m-%dT%H:%M"))
 dups=df["_dupkey"].duplicated().sum()
 print("exact-ish duplicate rows:", dups, f"({dups/n0*100:.2f}%)")
 clean=df.drop_duplicates("_dupkey").copy()

@@ -21,6 +21,15 @@ b["f_busstop_school_hosp"]=loc.str.contains("bus stop|busstop|school|hospital",r
 b["f_metro"]=loc.str.contains("metro",regex=False)
 b["f_market"]=loc.str.contains("market",regex=False)
 b["f_mall"]=loc.str.contains("mall",regex=False)
+# context fields for the front-end (derivable; clearance latency is NOT derivable — closure cols 100% null)
+def _vclass(v):
+    if v in TWOW: return "TWO-WHEELER"
+    if v in HEAVY: return "FREIGHT/HEAVY"
+    if v in {"PASSENGER AUTO","GOODS AUTO"}: return "AUTO"
+    if v in {"CAR","MAXI-CAB","JEEP","VAN"}: return "CAR/LV"
+    return "OTHER"
+b["_vclass"]=b["vehicle_type_final"].map(_vclass)
+_mode=lambda s: s.mode().iat[0] if len(s.mode()) else ""
 g=b.groupby("gh7")
 feat=pd.DataFrame({
  "n":g.size(),
@@ -44,7 +53,15 @@ feat=pd.DataFrame({
  "distinct_devices":g["device_id"].nunique(),
  "distinct_officers":g["created_by_id"].nunique(),
  "recurrence_weeks":g["isoweek"].nunique(),
+ "dominant_vehicle_class":g["_vclass"].agg(_mode),
 }).reset_index()
+# primary_infraction_type: most common violation label per cell (explode multi-label JSON)
+import json as _json
+_viol=b["violation_type"].map(lambda x:_json.loads(x) if isinstance(x,str) else [])
+_ex=pd.DataFrame({"gh7":b["gh7"].values,"v":_viol.values}).explode("v").dropna(subset=["v"])
+_prim=_ex.groupby("gh7")["v"].agg(_mode).rename("primary_infraction_type")
+feat=feat.merge(_prim,on="gh7",how="left")
+feat["primary_infraction_type"]=feat["primary_infraction_type"].fillna("")
 # GUARD: cell counts sum to base rows; tier3_share in [0,1]
 assert feat["n"].sum()==len(b), "feature counts != base rows"
 assert feat["tier3_share"].between(0,1).all(), "tier3_share out of range"

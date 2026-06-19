@@ -10,6 +10,8 @@ for _,r in f.iterrows():
         "properties":{"gh7":r["gh7"],"impact":round(float(r["impact"]),2),"rank":int(r["rank"]),
             "n":int(r["n"]),"tier3_share":round(float(r["tier3_share"]),3),
             "heavy_share":round(float(r["heavy_share"]),3),"gi_z":round(float(r["gi_z"]),2),
+            "dominant_vehicle_class":r.get("dominant_vehicle_class",""),
+            "primary_infraction_type":r.get("primary_infraction_type",""),
             "ranked":bool(r["ranked"])}})
 gj={"type":"FeatureCollection","features":feats}
 json.dump(gj,open("/kaggle/working/fe_out/cells.geojson","w"))

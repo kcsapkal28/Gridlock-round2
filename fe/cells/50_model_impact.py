@@ -12,7 +12,7 @@ y=d["impact"].values
 SCORE_INTERNAL={"impact","gi_z","gi_p","pca_composite","impact_char","hand_score","rank","ranked",
                 "gh7","gh6","gh5","lat","lon"}
 SPATIAL={"lag_n","lag_sev_sum","lag_tier3_share","kde_sev"}
-allfeat=[c for c in d.columns if c not in SCORE_INTERNAL and d[c].dtype!=object]
+allfeat=[c for c in d.columns if c not in SCORE_INTERNAL and pd.api.types.is_numeric_dtype(d[c])]
 FULL=allfeat
 TRANSFER=[c for c in allfeat if c not in SPATIAL]   # cell-intrinsic only (no spatial leakage)
 print("FULL feats:",len(FULL),"| TRANSFER feats:",len(TRANSFER),"| eval cells:",len(d),"| gh5 groups:",len(set(groups)))
@@ -34,14 +34,14 @@ oof_v,r2_v,_=cv(["n"],"volume")
 oof_t,r2_t,rho_t=cv(TRANSFER,"transfer")
 oof_f,r2_f,rho_f=cv(FULL,"full")
 
-# feature importance from a full-data model (gain)
+# SHIPPED model = INTRINSIC (leakage-remediated): no spatial/KDE/Gi* features. Full = leakage baseline only.
 m=lgb.LGBMRegressor(n_estimators=400,learning_rate=0.05,num_leaves=31,subsample=0.8,
     colsample_bytree=0.8,min_child_samples=20,reg_lambda=1.0,random_state=42,verbose=-1)
-m.fit(d[FULL],y)
-imp=pd.Series(m.booster_.feature_importance(importance_type="gain"),index=FULL).sort_values(ascending=False)
+m.fit(d[TRANSFER],y)   # intrinsic only
+imp=pd.Series(m.booster_.feature_importance(importance_type="gain"),index=TRANSFER).sort_values(ascending=False)
 imp.to_csv("/kaggle/working/fe_out/model_impact_importance.csv")
-d.assign(pred_full=oof_f)[["gh7","impact","pred_full"]].to_csv("/kaggle/working/fe_out/model_impact_oof.csv",index=False)
+d.assign(pred_intrinsic=oof_t)[["gh7","impact","pred_intrinsic"]].to_csv("/kaggle/working/fe_out/model_impact_oof.csv",index=False)
 m.booster_.save_model("/kaggle/working/fe_out/model_impact.txt")
 print("\nTOP 12 IMPACT DRIVERS (gain):")
 print(imp.head(12).round(0).to_string())
-print("\nSUMMARY: volume-only R2=%.3f | transferable R2=%.3f | full R2=%.3f"%(r2_v,r2_t,r2_f))
+print("\nSHIPPED model = INTRINSIC (R2=%.3f). Baselines: volume-only R2=%.3f | full(leakage) R2=%.3f"%(r2_t,r2_v,r2_f))

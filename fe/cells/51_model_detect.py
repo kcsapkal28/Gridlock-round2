@@ -14,7 +14,7 @@ print("hotspot label: impact>=%.1f | positives=%d/%d (%.1f%%) | gh5 groups=%d"%(
 SCORE_INTERNAL={"impact","gi_z","gi_p","pca_composite","impact_char","hand_score","rank","ranked",
                 "gh7","gh6","gh5","lat","lon"}
 SPATIAL={"lag_n","lag_sev_sum","lag_tier3_share","kde_sev"}
-allfeat=[c for c in d.columns if c not in SCORE_INTERNAL and d[c].dtype!=object]
+allfeat=[c for c in d.columns if c not in SCORE_INTERNAL and pd.api.types.is_numeric_dtype(d[c])]
 FULL=allfeat; TRANSFER=[c for c in allfeat if c not in SPATIAL]
 
 def cv(feats,label):
@@ -31,12 +31,13 @@ oof_v,auc_v,_=cv(["n"],"volume")
 oof_t,auc_t,ap_t=cv(TRANSFER,"transfer")
 oof_f,auc_f,ap_f=cv(FULL,"full")
 
+# SHIPPED detector = INTRINSIC (leakage-remediated). Full = leakage baseline only.
 m=lgb.LGBMClassifier(n_estimators=400,learning_rate=0.05,num_leaves=31,subsample=0.8,
     colsample_bytree=0.8,min_child_samples=20,reg_lambda=1.0,random_state=42,verbose=-1)
-m.fit(d[FULL],y)
-imp=pd.Series(m.booster_.feature_importance(importance_type="gain"),index=FULL).sort_values(ascending=False)
+m.fit(d[TRANSFER],y)   # intrinsic only
+imp=pd.Series(m.booster_.feature_importance(importance_type="gain"),index=TRANSFER).sort_values(ascending=False)
 imp.to_csv("/kaggle/working/fe_out/model_detect_importance.csv")
-d.assign(p_hotspot=oof_f)[["gh7","impact","p_hotspot"]].to_csv("/kaggle/working/fe_out/model_detect_oof.csv",index=False)
+d.assign(p_hotspot=oof_t)[["gh7","impact","p_hotspot"]].to_csv("/kaggle/working/fe_out/model_detect_oof.csv",index=False)
 m.booster_.save_model("/kaggle/working/fe_out/model_detect.txt")
-print("\nTOP 10 DETECTION FEATURES (gain):"); print(imp.head(10).round(0).to_string())
-print("\nSUMMARY ROC-AUC: volume=%.3f | transferable=%.3f | full=%.3f"%(auc_v,auc_t,auc_f))
+print("\nTOP 10 DETECTION FEATURES (intrinsic, gain):"); print(imp.head(10).round(0).to_string())
+print("\nSHIPPED detector = INTRINSIC ROC-AUC=%.3f. Baselines: volume=%.3f | full(leakage)=%.3f"%(auc_t,auc_v,auc_f))

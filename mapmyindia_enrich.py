@@ -72,9 +72,12 @@ def enrich(top_n=50):
             "mappls_street": g.get("street", ""), "mappls_subLocality": g.get("subLocality", ""),
             "mappls_locality": g.get("locality", ""), "mappls_district": g.get("district", ""),
             "road_class": rclass, "road_exposure": exp,
-            "impact_capacity": round(float(r["impact"]) * exp, 2),
+            "impact_capacity_raw": round(float(r["impact"]) * exp, 2),
         })
-    out = pd.DataFrame(rows).sort_values("impact_capacity", ascending=False)
+    out = pd.DataFrame(rows).sort_values("impact_capacity_raw", ascending=False)
+    # bound to 0-100 (order-preserving max-normalization) for UI consistency
+    mx = out["impact_capacity_raw"].max() or 1.0
+    out["impact_capacity"] = (100.0 * out["impact_capacity_raw"] / mx).round(2)
     os.makedirs("fe_work/fe_out", exist_ok=True)
     out.to_csv("fe_work/fe_out/top_enriched.csv", index=False)
     # GeoJSON points for the front-end
