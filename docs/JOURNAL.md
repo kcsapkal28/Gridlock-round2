@@ -294,3 +294,15 @@ Use one of the two templates below. Keep entries terse but self-contained.
 - System status: COMPLETE working dual-persona prototype (BTP console + logistics impedance/detour),
   model + RCP + API + frontend, screenshot/log-verified.
 <!-- Append the next entry below this line. -->
+
+### 2026-06-18 — Targeted-enforcement features A+B+C BUILT + verified
+- A Patrol Optimizer: /triage/patrol-plan (kmeans→Distance-Matrix NN-order→Routing). Verified live:
+  3 units, e.g. Unit1 25.8min/6 zones, real route geometry on map. (distance_matrix_many validates n×n,
+  haversine fallback.)
+- B What-If Simulator: client-only. Verified: top-10 → 48 min relieved, 32% carriageway-blocking removed,
+  4,688 citations covered.
+- C Blind-Spot Finder: 53_blindspots.py uses volume-independent impact_char vs coverage (model-based
+  version leaked volume → only 1 spot). 80 zones; magenta layer + ranked list verified.
+- BTP mode switcher (Hotspots/Patrol/What-If/Blind) all screenshot-verified, 0 console errors. 27 API tests pass.
+- Note: required uvicorn restart to load new endpoint (no --reload); preview window had to be forced to 1440px.
+<!-- Append the next entry below this line. -->
