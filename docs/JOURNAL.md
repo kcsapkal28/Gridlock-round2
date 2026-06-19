@@ -284,3 +284,13 @@ Use one of the two templates below. Keep entries terse but self-contained.
   Market→Hebbal), Critical/Medium SLA, red-blocked + green-detour rendered; 0 console errors; API 200s.
 - Next: refine with taste/frontend-design + impeccable skills.
 <!-- Append the next entry below this line. -->
+
+### 2026-06-18 — Frontend refinement (frontend-design taste + impeccable polish)
+- Taste pass: civic-tech instrument-panel aesthetic — Bricolage Grotesque + Familjen Grotesk + IBM Plex
+  Mono, traffic-amber signal accent, grain atmosphere, staggered card motion, live-pulse status.
+- Impeccable polish: caught + fixed an Absolute Ban (side-stripe borders on banner/stat/selected-card) →
+  full borders + tint + inset ring; bumped muted-text contrast. Added PRODUCT.md + DESIGN.md.
+- Verified via preview screenshots (BTP + logistics) + console logs: 0 errors, build clean.
+- System status: COMPLETE working dual-persona prototype (BTP console + logistics impedance/detour),
+  model + RCP + API + frontend, screenshot/log-verified.
+<!-- Append the next entry below this line. -->

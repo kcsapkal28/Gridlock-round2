@@ -2,7 +2,7 @@
   /* civic-tech instrument panel — near-black blue, traffic-amber signal accent */
   --bg: #080b11; --bg2: #0b0f17;
   --panel: #0e1420; --panel2: #131c2c; --line: #1f2c43; --line2: #2b3b58;
-  --text: #e9eff8; --muted: #7d8da6; --faint: #56657f;
+  --text: #e9eff8; --muted: #8a9bb5; --faint: #6f819d;
   --amber: #ffb23e; --teal: #36d6c3; --hot: #f0463c; --good: #38d39a; --warn: #ffb23e;
   --display: "Bricolage Grotesque", system-ui, sans-serif;
   --body: "Familjen Grotesk", system-ui, sans-serif;
@@ -49,17 +49,15 @@ body::after {
 .sidebar::-webkit-scrollbar { width: 8px; } .sidebar::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 8px; }
 .map-wrap { flex: 1; position: relative; }
 
-/* banner */
-.banner { border: 1px solid var(--line); border-left: 3px solid var(--amber);
-  background: linear-gradient(90deg, rgba(255,178,62,.07), transparent); border-radius: 8px;
-  padding: 12px 14px; margin-bottom: 16px; font-size: 13px; line-height: 1.45; }
-.banner b { font-family: var(--display); font-weight: 700; }
+/* banner (full border + tint, no side-stripe) */
+.banner { border: 1px solid var(--line2);
+  background: linear-gradient(135deg, rgba(255,178,62,.08), rgba(255,178,62,.02)); border-radius: 10px;
+  padding: 13px 15px; margin-bottom: 16px; font-size: 13px; line-height: 1.45; }
+.banner b { font-family: var(--display); font-weight: 700; color: var(--amber); }
 
 /* stats */
 .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 16px; }
-.stat { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 12px;
-  position: relative; overflow: hidden; }
-.stat::before { content:""; position:absolute; top:0; left:0; width:2px; height:100%; background:var(--line2); }
+.stat { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
 .stat .v { font-family: var(--display); font-size: 26px; font-weight: 800; line-height: 1;
   font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
 .stat .k { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase;
@@ -76,7 +74,7 @@ body::after {
 .card:nth-child(5){animation-delay:.12s}.card:nth-child(6){animation-delay:.15s}.card:nth-child(7){animation-delay:.18s}
 @keyframes rise { from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
 .card:hover { border-color: var(--line2); transform: translateX(2px); }
-.card.sel { border-color: var(--amber); box-shadow: -2px 0 0 0 var(--amber); }
+.card.sel { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber) inset; background: #16202f; }
 .card .row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
 .card .name { font-weight: 600; font-size: 13px; }
 .card .name .mono { font-family: var(--mono); font-size: 12px; color: var(--text); }
