@@ -273,3 +273,14 @@ Use one of the two templates below. Keep entries terse but self-contained.
 - Compliance: Distance Matrix = mapping infra (routing baseline, NOT live traffic). 21/21 API tests pass.
 - Caveat: capacity-reduction is a documented heuristic; O/D geometry approximates the corridor (snap-to-road 412).
 <!-- Append the next entry below this line. -->
+
+### 2026-06-18 — Dual-persona frontend BUILT + verified (Vite+React+Deck.gl)
+- Built web/ : App shell + persona toggle; MapView (Deck.gl GeoJsonLayer cells colored by impact, Carto-dark
+  base, top-hotspot markers, baseline/detour PathLayers, tooltips); BTPSidebar (stats, ROI horizon, ranked
+  zones w/ RCP delay); LogisticsSidebar (route presets, delay/SLA/recoverable metrics, choke list).
+- Backend endpoints wired: /triage/hotspots, /logistics/impedance-loop (live route_adv detour, cached).
+- Verified (FACT, screenshots + logs via preview tool): npm build clean (921 modules); BTP console renders
+  5,492 cells + markers + stats; Logistics route analysis returns delay 21.09 min (ORR) / 6.08 min (City
+  Market→Hebbal), Critical/Medium SLA, red-blocked + green-detour rendered; 0 console errors; API 200s.
+- Next: refine with taste/frontend-design + impeccable skills.
+<!-- Append the next entry below this line. -->
