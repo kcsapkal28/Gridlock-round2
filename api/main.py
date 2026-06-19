@@ -8,6 +8,7 @@ from api.scoring import ScoringService
 from api.mappls import MapplsClient
 from api.schemas import ImpedanceRequest
 from api.logistics import impedance, load_rcp
+from api.patrol import build_plan
 import json as _json
 
 def _key(path):
@@ -67,6 +68,10 @@ def create_app(scores_parquet=None):
                     "dominant_vehicle_class":str(getattr(r,"dominant_vehicle_class","")),
                     "primary_infraction_type":str(getattr(r,"primary_infraction_type",""))}})
         return {"type":"FeatureCollection","features":feats}
+
+    @app.get("/api/v1/triage/patrol-plan")
+    def patrol_plan(units: int = 3, topk: int = 15):
+        return build_plan(svc.df, mappls, units=units, topk=topk)
 
     @app.post("/api/v1/logistics/impedance-loop")
     def impedance_loop(req: ImpedanceRequest):
