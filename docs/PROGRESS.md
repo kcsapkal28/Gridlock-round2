@@ -57,8 +57,14 @@ congestion-impact score + a prioritised enforcement map. No invented R² target.
 - **RCP flow-impact:** `rcp.py` (Distance Matrix) → measured **delay minutes** per corridor (top 11.0 min).
   First *measured* "impact on traffic flow", not a proxy. In static bundle.
 
+## Done (extra features A+B+C) ✅
+- **Patrol Optimizer** (`/triage/patrol-plan`, kmeans+Distance-Matrix+Routing) — N optimized unit routes.
+- **What-If Simulator** (client) — clear top-N → delay relieved / Tier-3 removed / citations covered.
+- **Blind-Spot Finder** (`53_blindspots.py`) — high impact-character + low enforcement → 80 zones.
+- BTP mode switcher (Hotspots/Patrol/What-If/Blind); all screenshot-verified, 0 console errors, 27 API tests.
+
 ## Next up ⏭️
-- [ ] **Frontend UI** (reads static bundle + calls `/api/v1`; render RCP delay callouts).
+- [ ] Optional hardening: prefers-reduced-motion, `/mappls/token` Carto fallback, code-split web bundle.
 - [ ] **Phase-8 API follow-ups:** `/mappls/token` + Carto fallback, `/mappls/*` rate-limit, off-grid LightGBM in `/score`.
 - [ ] **MapMyIndia (mapping-infra only):** Snap-to-Road/Routing road class if a tier supports it (412 on free).
 - [ ] Frontend / full working system (per user — later).
