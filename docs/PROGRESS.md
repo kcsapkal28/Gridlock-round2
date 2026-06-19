@@ -50,8 +50,14 @@ congestion-impact score + a prioritised enforcement map. No invented R² target.
 - Fallbacks: score grid→nearest; mappls cache→live→fallback + circuit breaker; roadclass snap(gated)→geocode.
 - Static bundle + manifest (`web/public/data`); 19/19 tests; live smoke green. Spec/plan in `docs/superpowers/`.
 
+## Done (audit + flow-impact) ✅
+- Proto-validation checklist remediated: stable dedup key (drift→0), `impact_capacity` bounded 0–100,
+  shipped models = intrinsic (leakage-remediated), geojson +context fields.
+- **RCP flow-impact:** `rcp.py` (Distance Matrix) → measured **delay minutes** per corridor (top 11.0 min).
+  First *measured* "impact on traffic flow", not a proxy. In static bundle.
+
 ## Next up ⏭️
-- [ ] **Frontend UI** (reads static bundle + calls `/api/v1`).
+- [ ] **Frontend UI** (reads static bundle + calls `/api/v1`; render RCP delay callouts).
 - [ ] **Phase-8 API follow-ups:** `/mappls/token` + Carto fallback, `/mappls/*` rate-limit, off-grid LightGBM in `/score`.
 - [ ] **MapMyIndia (mapping-infra only):** Snap-to-Road/Routing road class if a tier supports it (412 on free).
 - [ ] Frontend / full working system (per user — later).
