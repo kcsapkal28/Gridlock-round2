@@ -9,3 +9,5 @@ fe_work/
 .mappls_cache/
 web/public/data/*
 !web/public/data/.gitkeep
+.superpowers/
+.DS_Store
