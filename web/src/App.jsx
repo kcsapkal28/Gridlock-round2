@@ -8,12 +8,16 @@ const INITIAL = { longitude: 77.59, latitude: 12.97, zoom: 11, pitch: 0, bearing
 
 export default function App() {
   const [persona, setPersona] = useState("btp");
+  const [btpMode, setBtpMode] = useState("hotspots");
   const [cells, setCells] = useState(null);
   const [tops, setTops] = useState([]);
   const [rcp, setRcp] = useState(null);
+  const [blind, setBlind] = useState(null);
   const [health, setHealth] = useState(null);
   const [selected, setSelected] = useState(null);
   const [route, setRoute] = useState(null);
+  const [plan, setPlan] = useState(null);
+  const [multi, setMulti] = useState([]); // gh7[] for What-If
   const [busy, setBusy] = useState(false);
   const [viewState, setViewState] = useState(INITIAL);
 
@@ -21,6 +25,7 @@ export default function App() {
     loadStatic("cells.geojson").then(setCells).catch(() => {});
     loadStatic("priority_table.json").then(setTops).catch(() => {});
     loadStatic("rcp.geojson").then(setRcp).catch(() => {});
+    loadStatic("blindspots.geojson").then(setBlind).catch(() => {});
     getHealth().then(setHealth);
   }, []);
 
@@ -34,6 +39,10 @@ export default function App() {
   function focusZone(z) {
     setSelected(z.gh7);
     setViewState((v) => ({ ...v, longitude: z.lon, latitude: z.lat, zoom: 15, transitionDuration: 600 }));
+  }
+  function presetSelect(n) { setMulti((tops || []).slice(0, n).map((z) => z.gh7)); }
+  function toggleCell(gh7) {
+    setMulti((m) => (m.includes(gh7) ? m.filter((x) => x !== gh7) : [...m, gh7]));
   }
 
   async function analyzeRoute(waypoints) {
@@ -64,14 +73,16 @@ export default function App() {
 
       <div className="body">
         {persona === "btp"
-          ? <BTPSidebar stats={stats} tops={tops} rcp={rcp} selected={selected} onSelect={focusZone} />
+          ? <BTPSidebar btpMode={btpMode} setBtpMode={setBtpMode} stats={stats} tops={tops} rcp={rcp}
+              blind={blind} selected={selected} onSelect={focusZone}
+              plan={plan} onPlan={setPlan} multi={multi} onPreset={presetSelect} />
           : <LogisticsSidebar route={route} busy={busy} onAnalyze={analyzeRoute} />}
         <div className="map-wrap">
           <MapView
-            persona={persona} cells={cells} tops={tops} rcp={rcp}
-            selected={selected} route={route}
+            persona={persona} btpMode={btpMode} cells={cells} tops={tops} rcp={rcp} blind={blind}
+            selected={selected} route={route} plan={plan} multi={multi}
             viewState={viewState} onViewState={setViewState}
-            onSelect={focusZone}
+            onSelect={focusZone} onToggleCell={toggleCell}
           />
         </div>
       </div>

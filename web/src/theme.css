@@ -36,6 +36,8 @@ body::after {
   border-radius: 6px; cursor: pointer; font-family: var(--mono); font-weight: 500; font-size: 12px;
   letter-spacing: .04em; text-transform: uppercase; transition: all .18s; }
 .toggle button.on { background: var(--amber); color: #1a1203; box-shadow: 0 1px 12px rgba(255,178,62,.3); }
+.toggle.modes { width: 100%; margin-bottom: 14px; }
+.toggle.modes button { flex: 1; padding: 8px 6px; font-size: 10.5px; letter-spacing: .02em; }
 .spacer { flex: 1; }
 .health { font-family: var(--mono); font-size: 11px; color: var(--faint); letter-spacing: .03em; }
 .live-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--good);

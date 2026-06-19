@@ -8,6 +8,11 @@ export async function getHealth() {
   try { const r = await fetch("/api/v1/health"); return r.ok ? r.json() : null; }
   catch { return null; }
 }
+export async function patrolPlan(units, topk) {
+  const r = await fetch(`/api/v1/triage/patrol-plan?units=${units}&topk=${topk}`);
+  if (!r.ok) throw new Error(`patrol ${r.status}`);
+  return r.json();
+}
 export async function impedanceLoop(waypoints, min_impact = 80) {
   const r = await fetch("/api/v1/logistics/impedance-loop", {
     method: "POST", headers: { "content-type": "application/json" },
