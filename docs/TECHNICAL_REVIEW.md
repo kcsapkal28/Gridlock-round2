@@ -264,8 +264,9 @@ heavy-vehicle share, commercial share. Volume (`n`) alone is weak — consistent
    **internally coherent, not externally validated.** This is the single biggest caveat.
 2. **"Quantify impact on flow" is met as a proxy, not a measurement.** We assume Tier-3/heavy ⇒ more
    congestion. Reasonable, untested against any flow signal.
-3. **The 0.98 R² / 0.99 AUC are not independent validation** — the full models relearn the score's own
-   inputs. The honest generalization numbers are 0.34 / 0.85.
+3. ~~**The 0.98 R² / 0.99 AUC are not independent validation.**~~ **REMEDIATED (2026-06-18):** the
+   **shipped** models are now the **intrinsic** ones (R² 0.337 / AUC 0.847, no spatial/KDE/Gi* features);
+   the leaky "full" models are retained only as a labeled baseline. Headline = the honest 0.85.
 4. **The detector's label is our own score** (top-quartile impact), so it predicts a construct, not an
    externally-defined hotspot.
 5. **Enforcement bias is fundamental.** Zones with illegal parking but no ticketing are invisible — we can
@@ -291,14 +292,17 @@ heavy-vehicle share, commercial share. Volume (`n`) alone is weak — consistent
     proper importable module.
 12. **No automated tests / CI.** Correctness rests on inline guard-assertions (good) but there is no
     regression harness; a refactor could silently change numbers.
-13. **Local vs remote drift:** cleaned row count differs by 2 (293,068 vs 293,070) due to a pandas-version
-    tie-break in dedup, and Gi* z-magnitudes differ by libpysal version (ranks identical). Harmless, but a
-    true reproducible build would pin versions.
-14. **`impact_capacity` is unbounded** (can exceed 100) — not re-normalized; cosmetic but untidy for a UI.
+13. ~~**Local vs remote drift (2 rows).**~~ **RESOLVED (2026-06-18):** dedup key now uses fixed-width
+    formatting (`f"{x:.5f}"`, `strftime`) + a pre-sort on the unique `id`, so the key is identical across
+    pandas/numpy versions → deterministic 293,068 in every environment. (Gi* z-magnitudes still differ by
+    libpysal version but ranks/percentiles are identical — the score uses percentiles.)
+14. ~~**`impact_capacity` is unbounded.**~~ **RESOLVED (2026-06-18):** order-preserving max-normalization to
+    0–100 in `mapmyindia_enrich.py`.
 15. **Geohash cells are arbitrary w.r.t. actual road geometry** — a cell can straddle two streets. Road-
     segment units would be more faithful (requires MapMyIndia snap-to-road).
-16. **Richer per-zone fields** (dominant violation/vehicle, station, enforcement-hour) are computed but
-    **not exported** to the GeoJSON yet — popups would currently be thin.
+16. ~~**Richer per-zone fields not exported.**~~ **PARTLY RESOLVED (2026-06-18):** GeoJSON now carries
+    `dominant_vehicle_class` + `primary_infraction_type`. NOTE: **`clearance_latency` is NOT derivable** —
+    `closed_datetime` and `action_taken_timestamp` are 100% null (no closure timestamps in the data).
 
 ---
 

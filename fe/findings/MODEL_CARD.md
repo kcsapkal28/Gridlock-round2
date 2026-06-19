@@ -32,7 +32,8 @@ log (293k cleaned rows, `is_valid` filter, EB-smoothed rates):
 
 **Headline:** volume alone ≈ coin-flip for finding impact-hotspots (AUC 0.588); cell *character*
 (severity/heavy-vehicle/road) detects them at **0.847 AUC** in unseen regions; the full model is a
-deployable 0.99-AUC detector / 0.98-R² scorer.
+deployable detector. **Shipped boosters = the INTRINSIC models (R² 0.337 / AUC 0.847)** — leakage-
+remediated (no spatial/KDE/Gi* features); the "full" models are retained only as a labeled baseline.
 
 ## Score validation (the shipped unsupervised score)
 - **Face validity:** top-50 cells carry **3.15× Tier-3** and **1.37× heavy-vehicle** vs baseline.

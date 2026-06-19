@@ -249,3 +249,16 @@ Use one of the two templates below. Keep entries terse but self-contained.
   durations [[0,238.5]] s. → Routing-Cost-Penalty flow-delay quantification is FEASIBLE (allowed mapping-infra).
 - Snap-to-Road still 412 (blocked, free tier).
 <!-- Append the next entry below this line. -->
+
+### 2026-06-18 — Audit remediation (items 1-4 of proto-validation checklist)
+- §1.3 drift: version-stable dedup key (fixed-width f"{x:.5f}" + strftime) + pre-sort on unique id ->
+  deterministic 293,068 across environments (sorting alone only fixes which row survives, not the count).
+- §2.2: impact_capacity max-normalized to 0-100 (was 98-150).
+- §3.1 leakage: SHIPPED models switched to INTRINSIC (R2 0.337 / AUC 0.847); full kept as labeled baseline.
+  (Bug found+fixed: string cols loaded as pandas 'string' dtype slipped past !=object filter -> use is_numeric_dtype.)
+- §5.1: geojson +dominant_vehicle_class +primary_infraction_type. clearance_latency NOT derivable (closure cols 100% null).
+- Verified: full pipeline re-run clean; 19/19 API tests pass; enrich 0 new calls (cached).
+- DECLINED w/ reason: §2.1 PCA-as-weights (PC1=volume -> would re-break score; sensitivity study defends better),
+  §5.2 parallel batch (free-tier safety), §1.4 downcast (no memory pressure). §4.1 snap-to-road BLOCKED (412).
+- Next: §4.2 Routing-Cost-Penalty delay loop (Distance Matrix VERIFIED 200) as its own focused piece.
+<!-- Append the next entry below this line. -->

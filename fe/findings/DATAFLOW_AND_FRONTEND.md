@@ -44,7 +44,7 @@ then `python mapmyindia_enrich.py 50` (local).
 
 ## Per-zone fields available
 
-**Exported now** (in geojson/priority/enriched): `impact` (0–100), `rank`, `n` (tickets),
+**Exported now** (geojson also has `dominant_vehicle_class`, `primary_infraction_type`): `impact` (0–100), `rank`, `n` (tickets),
 `tier3_share` (% carriageway-blocking), `heavy_share`, `gi_z` (significance), `ranked` flag;
 enriched: `mappls_street`, `mappls_locality`, `road_class`, `road_exposure`, `impact_capacity`.
 
