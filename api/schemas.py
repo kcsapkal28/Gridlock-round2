@@ -10,6 +10,11 @@ class ScoreResult(BaseModel):
 class Health(BaseModel):
     status:str; version:str; artifacts_version:Optional[str]; model_loaded:bool
     mappls:Literal["live","cached","down"]
+class Waypoint(BaseModel):
+    lat: float=Field(ge=-90, le=90); lng: float=Field(ge=-180, le=180)
+class ImpedanceRequest(BaseModel):
+    waypoints: list[Waypoint]=Field(min_length=2)
+    min_impact: float=80.0
 class ErrorBody(BaseModel):
     code:str; message:str; request_id:str
 class ErrorEnvelope(BaseModel):
