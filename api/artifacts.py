@@ -8,7 +8,7 @@ def build_static(scores_parquet, fe_out, out_dir, version="0.1.0"):
     cols=["gh7","lat","lon","impact","rank","n","tier3_share","heavy_share"]
     json.dump(ranked[cols].head(100).round(4).to_dict("records"),
               open(os.path.join(out_dir,"priority_table.json"),"w"))
-    for fn in ["cells.geojson","top_enriched.geojson","rcp.geojson","rcp.csv","kde_points.csv","rollup_gh6.csv","rollup_gh5.csv"]:
+    for fn in ["cells.geojson","top_enriched.geojson","rcp.geojson","rcp.csv","blindspots.geojson","kde_points.csv","rollup_gh6.csv","rollup_gh5.csv"]:
         src=os.path.join(fe_out,fn)
         if os.path.exists(src): shutil.copy(src, os.path.join(out_dir,fn))
     files=[]
