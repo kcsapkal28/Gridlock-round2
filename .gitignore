@@ -3,7 +3,8 @@
 eda/eda_out/
 __pycache__/
 *.parquet
-"jan to may"*.csv
+jan to may police violation_anonymized791b166.csv
+jan to may*.csv
 fe_work/
 .mappls_secrets
 .mappls_cache/
