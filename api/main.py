@@ -112,6 +112,13 @@ def create_app(scores_parquet=None):
         """Forgiving area-name → coordinate resolver (typos / abbreviations / partials OK)."""
         return resolve_place(q, gazetteer)
 
+    @app.get("/api/v1/command/today")
+    def command_today(n: int = 3, units: int = 3, area: str = ""):
+        """Plain-language deployment decision + shareable shift order. Deterministic (no AI)."""
+        from api.command import build_today
+        return build_today(svc.df, rcp_lookup, gazetteer, stations,
+                           n=max(1, min(n, 10)), units=max(1, min(units, 6)), area=area or None)
+
     @app.post("/api/v1/logistics/impedance-loop")
     def impedance_loop(req: ImpedanceRequest, request: Request):
         wps=[{"lat":w.lat,"lng":w.lng} for w in req.waypoints]

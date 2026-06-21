@@ -197,6 +197,41 @@ body::after {
   padding: 9px 11px; margin-bottom: 7px; font-size: 12px; line-height: 1.45; color: var(--text); }
 .ai-insight i { color: var(--amber); font-size: 14px; margin-top: 1px; }
 
+/* ===== Simple/Pro mode toggle ===== */
+.mode-toggle button { padding: 8px 14px; font-size: 11px; }
+
+/* ===== Command (Simple) view ===== */
+.cmd-hero { border: 1px solid var(--line2); border-radius: 12px; padding: 14px;
+  background: linear-gradient(135deg, rgba(54,214,195,.08), rgba(255,178,62,.03)); margin-bottom: 16px; }
+.hero-title { font-family: var(--display); font-weight: 800; font-size: 18px; margin-bottom: 10px; letter-spacing: -.01em; }
+.hero-reply { margin-top: 10px; font-size: 13px; line-height: 1.5; color: var(--text);
+  background: rgba(54,214,195,.06); border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px; }
+.hero-hint { margin-top: 8px; font-size: 11.5px; color: var(--faint); line-height: 1.4; }
+.area-row { display: flex; gap: 7px; align-items: center; margin-bottom: 10px; }
+.area-row input { flex: 1; background: #0a0f18; border: 1px solid var(--line2); border-radius: 8px;
+  padding: 8px 10px; color: var(--text); font-family: var(--body); font-size: 12.5px; outline: none; }
+.area-row input:focus { border-color: var(--amber); }
+
+.deploy-card { display: flex; gap: 11px; background: var(--panel2); border: 1px solid var(--line);
+  border-radius: 11px; padding: 12px; margin-bottom: 9px; cursor: pointer; transition: all .16s; animation: rise .35s both; }
+.deploy-card:hover { border-color: var(--amber); transform: translateX(2px); }
+.dc-rank { flex: 0 0 28px; height: 28px; border-radius: 50%; background: var(--amber); color: #1a1203;
+  font-family: var(--display); font-weight: 800; font-size: 15px; display: flex; align-items: center; justify-content: center; }
+.dc-body { flex: 1; min-width: 0; }
+.dc-area { font-family: var(--display); font-weight: 700; font-size: 15px; display: flex; align-items: baseline; gap: 8px; }
+.dc-spots { font-family: var(--mono); font-size: 9.5px; color: var(--faint); background: #16223a;
+  padding: 1px 7px; border-radius: 999px; text-transform: uppercase; letter-spacing: .04em; }
+.dc-station { font-size: 11.5px; color: var(--muted); margin: 3px 0 6px; }
+.dc-action { font-size: 13px; color: var(--text); font-weight: 600; line-height: 1.35; }
+.dc-meta { font-size: 11.5px; color: var(--muted); margin-top: 5px; display: flex; flex-wrap: wrap; gap: 4px; }
+.dc-meta .dc-impact { color: var(--warn); font-weight: 600; }
+.dc-conf { font-size: 11px; margin-top: 6px; font-weight: 500; }
+
+/* shift-order modal text */
+.order-text { background: #0a0f18; border: 1px solid var(--line); border-radius: 9px; padding: 14px;
+  font-family: var(--mono); font-size: 12px; line-height: 1.55; color: var(--text); white-space: pre-wrap;
+  max-height: 52vh; overflow-y: auto; margin-bottom: 14px; }
+
 /* ===== API-key settings (gear + modal) ===== */
 .gear-btn { background: transparent; border: 1px solid var(--line); color: var(--muted);
   width: 34px; height: 34px; border-radius: 8px; cursor: pointer; font-size: 16px; line-height: 1;

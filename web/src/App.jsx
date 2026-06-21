@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { loadStatic, getHealth, impedanceLoop, routeByName, aiHealth } from "./api.js";
+import { loadStatic, getHealth, impedanceLoop, routeByName, commandToday, aiHealth } from "./api.js";
 import MapView from "./components/MapView.jsx";
 import BTPSidebar from "./components/BTPSidebar.jsx";
 import LogisticsSidebar from "./components/LogisticsSidebar.jsx";
+import CommandView from "./components/CommandView.jsx";
+import ShiftOrderModal from "./components/ShiftOrderModal.jsx";
 import CommandBar from "./components/ai/CommandBar.jsx";
 import SettingsModal from "./components/SettingsModal.jsx";
 import { applyAiActions } from "./lib/aiActions.js";
@@ -31,10 +33,19 @@ export default function App() {
   const [showStations, setShowStations] = useState(false);
   const [aiAvail, setAiAvail] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [uiMode, setUiMode] = useState("simple");   // simple (decision) | pro (analyst)
+  const [today, setToday] = useState(null);
+  const [todayLoading, setTodayLoading] = useState(false);
+  const [commandArea, setCommandArea] = useState("");
+  const [orderText, setOrderText] = useState(null);
 
   function refreshStatus() {
     getHealth().then(setHealth);
     aiHealth().then((d) => setAiAvail(!!d.available));
+  }
+  function loadToday(area = commandArea) {
+    setTodayLoading(true);
+    commandToday(3, 3, area).then(setToday).catch(() => setToday(null)).finally(() => setTodayLoading(false));
   }
   useEffect(() => {
     loadStatic("cells.geojson").then(setCells).catch(() => {});
@@ -43,7 +54,14 @@ export default function App() {
     loadStatic("blindspots.geojson").then(setBlind).catch(() => {});
     loadStatic("stations.json").then(setStations).catch(() => {});
     refreshStatus();
+    loadToday("");
   }, []);
+
+  function onCommandArea(area) {
+    setCommandArea(area);
+    loadToday(area);
+    if (!area) setViewState(INITIAL);
+  }
 
   const stats = useMemo(() => {
     const zones = cells?.features?.length || 0;
@@ -102,6 +120,12 @@ export default function App() {
           <button className={persona === "btp" ? "on" : ""} onClick={() => setPersona("btp")}>BTP Command</button>
           <button className={persona === "logistics" ? "on" : ""} onClick={() => setPersona("logistics")}>Flipkart Logistics</button>
         </div>
+        {persona === "btp" && (
+          <div className="toggle mode-toggle">
+            <button className={uiMode === "simple" ? "on" : ""} onClick={() => setUiMode("simple")} title="Decision view for field officers">Simple</button>
+            <button className={uiMode === "pro" ? "on" : ""} onClick={() => setUiMode("pro")} title="Full analyst console">Pro</button>
+          </div>
+        )}
         <CommandBar available={aiAvail} onActions={aiApply} />
         <div className="health">
           {health ? <span className="live-dot" /> : null}
@@ -113,10 +137,14 @@ export default function App() {
 
       <div className={"body" + (sidebarOpen ? "" : " collapsed")}>
         {persona === "btp"
-          ? <BTPSidebar btpMode={btpMode} setBtpMode={setBtpMode} stats={stats} tops={tops} rcp={rcp}
-              blind={blind} selected={selected} onSelect={focusZone} onFocus={focusPoint}
-              plan={plan} onPlan={setPlan} multi={multi} onPreset={presetSelect}
-              onSetMulti={setMulti} aiAvail={aiAvail} />
+          ? (uiMode === "simple"
+              ? <CommandView today={today} loading={todayLoading} area={commandArea}
+                  onArea={onCommandArea} onFocus={focusZone} onOpenOrder={setOrderText}
+                  aiAvail={aiAvail} onAiActions={aiApply} />
+              : <BTPSidebar btpMode={btpMode} setBtpMode={setBtpMode} stats={stats} tops={tops} rcp={rcp}
+                  blind={blind} selected={selected} onSelect={focusZone} onFocus={focusPoint}
+                  plan={plan} onPlan={setPlan} multi={multi} onPreset={presetSelect}
+                  onSetMulti={setMulti} aiAvail={aiAvail} />)
           : <LogisticsSidebar route={route} busy={busy} onAnalyze={analyzeRoute} onAnalyzeByName={analyzeByName}
               onFocus={focusPoint} aiAvail={aiAvail} onAiActions={aiApply} />}
         <button className="sidebar-toggle" onClick={() => setSidebarOpen((v) => !v)}
@@ -124,7 +152,7 @@ export default function App() {
           {sidebarOpen ? "‹" : "›"}
         </button>
         <div className="map-wrap">
-          <div className="map-ctrl">
+          {!(persona === "btp" && uiMode === "simple") && <div className="map-ctrl">
             <div className="mc-title">Impact filter</div>
             <label className="mc-check">
               <input type="checkbox" checked={showAll} onChange={(e) => setShowAll(e.target.checked)} />
@@ -140,17 +168,19 @@ export default function App() {
               <input type="checkbox" checked={showStations} onChange={(e) => setShowStations(e.target.checked)} />
               <span>Police stations</span>
             </label>
-          </div>
+          </div>}
           <MapView
             persona={persona} btpMode={btpMode} cells={cells} tops={tops} rcp={rcp} blind={blind}
             selected={selected} route={route} plan={plan} multi={multi}
             viewState={viewState} onViewState={setViewState}
             onSelect={focusZone} onToggleCell={toggleCell}
             showAll={showAll} impactMin={impactMin} stations={stations} showStations={showStations}
+            commandCards={persona === "btp" && uiMode === "simple" ? (today?.cards || []) : null}
           />
         </div>
       </div>
       <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} onSaved={refreshStatus} />
+      <ShiftOrderModal open={!!orderText} text={orderText || ""} onClose={() => setOrderText(null)} />
     </div>
   );
 }

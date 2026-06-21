@@ -10,7 +10,7 @@ const hexRgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
 export default function MapView(props) {
   const { persona, btpMode, cells, tops, rcp, blind, selected, route, plan, multi,
     viewState, onViewState, onSelect, onToggleCell,
-    showAll, impactMin, stations, showStations } = props;
+    showAll, impactMin, stations, showStations, commandCards } = props;
   const layers = [];
   const isBTP = persona === "btp";
   const whatif = isBTP && btpMode === "whatif";
@@ -63,6 +63,27 @@ export default function MapView(props) {
       radiusUnits: "meters", radiusMinPixels: 4, getFillColor: (d) => impactColor(d.impact, 235),
       getLineColor: [255, 255, 255, 200], lineWidthMinPixels: 1, stroked: true,
       onClick: (info) => info.object && onSelect(info.object),
+    }));
+  }
+
+  // BTP · Simple/decision mode — numbered priority-deployment markers
+  if (commandCards && commandCards.length) {
+    const data = commandCards.map((c, i) => ({ ...c, seq: i + 1 }));
+    layers.push(new ScatterplotLayer({
+      id: "command-cards", data, pickable: true, getPosition: (d) => [d.lon, d.lat],
+      getRadius: 40 + 60, radiusUnits: "meters", radiusMinPixels: 13, radiusMaxPixels: 22,
+      getFillColor: [255, 178, 62, 240], getLineColor: [10, 14, 22, 255], lineWidthMinPixels: 2, stroked: true,
+      onClick: (info) => info.object && onSelect({ gh7: info.object.gh7, lat: info.object.lat, lon: info.object.lon }),
+    }));
+    layers.push(new TextLayer({
+      id: "command-seq", data, getPosition: (d) => [d.lon, d.lat], getText: (d) => String(d.seq),
+      getSize: 14, getColor: [10, 14, 22, 255], getTextAnchor: "middle", getAlignmentBaseline: "center",
+      fontWeight: 700, fontSettings: { sdf: true },
+    }));
+    layers.push(new TextLayer({
+      id: "command-area", data, getPosition: (d) => [d.lon, d.lat], getText: (d) => d.area,
+      getSize: 11, getColor: [255, 220, 150, 255], getPixelOffset: [0, -20], getTextAnchor: "middle",
+      fontWeight: 600, outlineWidth: 2, outlineColor: [8, 11, 18, 255], fontSettings: { sdf: true },
     }));
   }
 
