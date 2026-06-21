@@ -163,15 +163,18 @@ npm install
 npm run dev                              # http://localhost:5173  (proxies /api → :8011)
 ```
 
-### 4. AI Copilot (optional)
-The copilot calls Claude through a local OpenAI/Anthropic proxy. Without it the app runs
-normally and the AI surfaces show "offline".
+### 4. AI Copilot (fully optional)
+**The app runs completely without it** — every AI surface degrades to "offline" and all core
+features (scoring, hotspots, patrol, logistics, filters) work unchanged. To enable it:
 ```bash
+pip install -r requirements-ai.txt       # optional anthropic SDK (not in the base install)
 # in the claude-openai proxy repo (Claude CLI must be logged in):
 bash start.sh -p 4000                    # exposes :4001 Anthropic-native passthrough
 ```
-Backend config (env, defaults in `api/config.py`): `AI_BASE_URL=http://localhost:4001`,
-`AI_MODEL=claude-sonnet-4-6`, `AI_ENABLED=1`. The grounded agentic loop runs server-side.
+The backend validates the key on a cached probe; if the SDK is missing, the proxy is down,
+**or the key is invalid**, the copilot simply reports offline (no errors, no crashes).
+Config (env, defaults in `api/config.py`): `AI_BASE_URL=http://localhost:4001`,
+`AI_MODEL=claude-sonnet-4-6`, `AI_ENABLED=1` (set `AI_ENABLED=0` to force-disable).
 
 ### 5. Tests
 ```bash

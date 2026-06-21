@@ -66,3 +66,9 @@ def test_available_false_when_disabled():
     s = copy.copy(settings)
     s.AI_ENABLED = False
     assert AIClient(s).available() is False
+
+
+def test_available_false_when_probe_fails():
+    # client present but count_tokens raises (dead proxy / missing key) -> offline, no crash
+    c = _client()                      # FakeMessages has no count_tokens
+    assert c.available() is False

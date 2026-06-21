@@ -9,33 +9,44 @@ Context discipline (see spec §5.5): tool RESULTS fed back to the model are the 
 browser via `ui_actions`, which this loop accumulates separately and never sends to the model.
 """
 import json
-import socket
-from urllib.parse import urlparse
+import time
 
 
 class AIClient:
     def __init__(self, settings):
         self.s = settings
         self._client = None
+        self._avail = None          # cached availability
+        self._avail_ts = 0.0
         if settings.AI_ENABLED:
             try:
-                import anthropic
+                import anthropic     # optional dependency — absent => AI simply stays offline
                 self._client = anthropic.Anthropic(
                     api_key=settings.AI_API_KEY, base_url=settings.AI_BASE_URL,
                     timeout=settings.AI_TIMEOUT, max_retries=1)
             except Exception:
                 self._client = None
 
-    # ---- availability: cheap TCP probe of the proxy, so /ai/health never costs a token ----
+    # ---- availability: cheap key-validating probe (count_tokens), cached 30s ----
+    # Returns True only when AI is enabled AND the proxy is reachable AND the key is valid.
+    # Distinguishes all the "no key" cases: missing SDK / disabled / dead proxy / bad key.
     def available(self):
         if not (self.s.AI_ENABLED and self._client):
             return False
+        now = time.monotonic()
+        if self._avail is not None and (now - self._avail_ts) < 30:
+            return self._avail
         try:
-            u = urlparse(self.s.AI_BASE_URL)
-            with socket.create_connection((u.hostname, u.port or 80), timeout=2):
-                return True
+            self._client.messages.count_tokens(
+                model=self.s.AI_MODEL, messages=[{"role": "user", "content": "ping"}])
+            ok = True
         except Exception:
-            return False
+            ok = False
+        self._avail, self._avail_ts = ok, now
+        return ok
+
+    def _invalidate(self):
+        self._avail = None
 
     def _cap(self, text):
         n = self.s.AI_MODEL_SUMMARY_MAX_CHARS

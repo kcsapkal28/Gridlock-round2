@@ -50,44 +50,60 @@ def build_ai_router(svc, mappls):
         hist = hist[-(settings.AI_HISTORY_EXCHANGES * 2):]
         msgs = [{"role": m["role"], "content": str(m["content"])[:1000]} for m in hist]
         msgs.append({"role": "user", "content": req.message})
-        reply, actions = ai.run(prompts.COMMAND_SYSTEM, msgs, TOOLS, ex.dispatch)
-        return {"available": True, "reply": reply, "ui_actions": actions}
+        try:
+            reply, actions = ai.run(prompts.COMMAND_SYSTEM, msgs, TOOLS, ex.dispatch)
+            return {"available": True, "reply": reply, "ui_actions": actions}
+        except Exception:
+            ai._invalidate()
+            return {"available": False, "reply": "Copilot is unavailable right now.", "ui_actions": []}
 
     @r.get("/brief")
     def brief():
         if not ai.available():
             return {"available": False, "brief": ""}
-        top, _ = ex.query_hotspots({"limit": 5})
-        bs, _ = ex.find_blindspots({"limit": 3})
-        data = {"top_zones": top["top"], "total_zones": int(len(svc.df)),
-                "rankable": int(svc.df["ranked"].sum()), "blind_spots": bs["top"]}
-        text = ai.complete(prompts.BRIEF_SYSTEM, prompts.BRIEF_TASK.format(data=json.dumps(data, default=str)))
-        return {"available": True, "brief": text}
+        try:
+            top, _ = ex.query_hotspots({"limit": 5})
+            bs, _ = ex.find_blindspots({"limit": 3})
+            data = {"top_zones": top["top"], "total_zones": int(len(svc.df)),
+                    "rankable": int(svc.df["ranked"].sum()), "blind_spots": bs["top"]}
+            text = ai.complete(prompts.BRIEF_SYSTEM, prompts.BRIEF_TASK.format(data=json.dumps(data, default=str)))
+            return {"available": True, "brief": text}
+        except Exception:
+            ai._invalidate()
+            return {"available": False, "brief": ""}
 
     @r.post("/explain")
     def explain(req: ExplainReq):
         if not ai.available():
             return {"available": False, "text": ""}
-        if req.gh7:
-            data, _ = ex.get_zone({"gh7": req.gh7})
-            task = prompts.EXPLAIN_ZONE_TASK
-        elif req.route_summary:
-            data = req.route_summary
-            task = prompts.EXPLAIN_ROUTE_TASK
-        else:
-            return {"available": True, "text": ""}
-        text = ai.complete(prompts.EXPLAIN_SYSTEM, task.format(data=json.dumps(data, default=str)), max_tokens=220)
-        return {"available": True, "text": text}
+        try:
+            if req.gh7:
+                data, _ = ex.get_zone({"gh7": req.gh7})
+                task = prompts.EXPLAIN_ZONE_TASK
+            elif req.route_summary:
+                data = req.route_summary
+                task = prompts.EXPLAIN_ROUTE_TASK
+            else:
+                return {"available": True, "text": ""}
+            text = ai.complete(prompts.EXPLAIN_SYSTEM, task.format(data=json.dumps(data, default=str)), max_tokens=220)
+            return {"available": True, "text": text}
+        except Exception:
+            ai._invalidate()
+            return {"available": False, "text": ""}
 
     @r.get("/insights")
     def insights():
         if not ai.available():
             return {"available": False, "insights": []}
-        cand = insights_mod.candidates(svc)
-        if not cand["findings"]:
-            return {"available": True, "insights": []}
-        text = ai.complete(prompts.INSIGHTS_SYSTEM, prompts.INSIGHTS_TASK.format(data=json.dumps(cand)))
-        lines = [ln.strip(" -•").strip() for ln in text.splitlines() if ln.strip()]
-        return {"available": True, "insights": lines[:3]}
+        try:
+            cand = insights_mod.candidates(svc)
+            if not cand["findings"]:
+                return {"available": True, "insights": []}
+            text = ai.complete(prompts.INSIGHTS_SYSTEM, prompts.INSIGHTS_TASK.format(data=json.dumps(cand)))
+            lines = [ln.strip(" -•").strip() for ln in text.splitlines() if ln.strip()]
+            return {"available": True, "insights": lines[:3]}
+        except Exception:
+            ai._invalidate()
+            return {"available": False, "insights": []}
 
     return r
