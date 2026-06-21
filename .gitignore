@@ -5,19 +5,11 @@ __pycache__/
 *.parquet
 jan to may police violation_anonymized791b166.csv
 jan to may*.csv
-# research pipeline & non-deploy files — kept local, not in the public repo.
-# The running system uses srv_data/ (committed) + web/public/data/ (committed).
-fe_work/
-eda/
-fe/
-rcp.py
-mapmyindia_enrich.py
-run_local.py
-requirements.txt
-requirements-ai.txt
-DESIGN.md
-PRODUCT.md
-USER_GUIDE.md
+# fe_work: ignore the heavy pipeline intermediates, but COMMIT the runtime artifacts
+# (cell_scores.parquet + everything in fe_out: model + scored geojson/csv layers)
+fe_work/*
+!fe_work/cell_scores.parquet
+!fe_work/fe_out/
 .mappls_secrets
 .mappls_cache/
 # web bundle: commit the generated data layers so the app runs on a fresh clone

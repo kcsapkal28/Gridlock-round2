@@ -1,0 +1,4 @@
+# OPTIONAL — only needed to enable the Claude AI copilot.
+# The base app (requirements-api.txt) runs fully without this.
+# Also requires the local claude-openai proxy running with a valid Claude session.
+anthropic==0.111.0
