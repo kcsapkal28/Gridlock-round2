@@ -1,0 +1,41 @@
+# Render Blueprint — two services: FastAPI backend + static Vite/React frontend.
+# Deploy via Render UI: New → Blueprint → pick this repo. (Manual steps also in DEPLOY.md.)
+services:
+  # ---------- Backend API (FastAPI) ----------
+  - type: web
+    name: gridlock-api
+    runtime: python
+    region: singapore          # closest Render region to Bengaluru
+    plan: free
+    buildCommand: pip install -r requirements-api.txt
+    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.6"
+      - key: SCORES_PARQUET
+        value: srv_data/cell_scores.parquet
+      - key: IMPACT_MODEL
+        value: srv_data/model_impact.txt
+      - key: RCP_CSV
+        value: srv_data/rcp.csv
+      - key: CORS_ORIGINS
+        value: "*"             # public demo; tighten to the frontend URL if desired
+      - key: AI_ENABLED
+        value: "0"             # AI copilot needs a local proxy; off in cloud (UI degrades gracefully)
+
+  # ---------- Frontend (static Vite build) ----------
+  - type: web
+    name: gridlock-web
+    runtime: static
+    buildCommand: cd web && npm install && npm run build
+    staticPublishPath: web/dist
+    envVars:
+      - key: VITE_API_BASE
+        # the backend's public URL. If Render appended a suffix to the API name,
+        # update this to the exact URL shown on the gridlock-api service page, then redeploy.
+        value: https://gridlock-api.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

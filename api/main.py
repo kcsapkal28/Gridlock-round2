@@ -12,6 +12,8 @@ from api.patrol import build_plan
 import json as _json
 
 def _key(path):
+    env = __import__("os").environ.get("MAPPLS_KEY")   # prefer env (Render secret) over the file
+    if env: return env.strip()
     try:
         for l in open(path):
             if l.startswith("MAPPLS_KEY"): return l.split("=",1)[1].strip()
@@ -33,7 +35,7 @@ def create_app(scores_parquet=None):
     svc=ScoringService(sp, settings.IMPACT_MODEL)
     mappls=MapplsClient(settings.MAPPLS_CACHE, _key(settings.MAPPLS_SECRETS),
                         breaker_fails=settings.BREAKER_FAILS, cooldown=settings.BREAKER_COOLDOWN)
-    rcp_lookup=load_rcp()
+    rcp_lookup=load_rcp(settings.RCP_CSV)
 
     @app.middleware("http")
     async def reqid(request: Request, call_next):
