@@ -1,0 +1,6 @@
+# Runtime-artifacts source (Google Drive folder, shared "anyone with the link").
+# Copy this file to ".assets_url" (which is gitignored) and paste your folder link below,
+# or set the GRIDLOCK_ASSETS_URL env var instead. Then run:  python fetch_assets.py
+#
+# Example:
+# https://drive.google.com/drive/folders/XXXXXXXXXXXXXXXXXXXXXXXX?usp=sharing

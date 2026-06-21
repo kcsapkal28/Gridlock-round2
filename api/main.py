@@ -1,4 +1,4 @@
-import uuid
+import os, uuid
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,10 +19,18 @@ def _key(path):
     return ""
 
 def create_app(scores_parquet=None):
+    sp = scores_parquet or settings.SCORES_PARQUET
+    # On a fresh clone the scored artifacts are not in git — pull them from Drive on first run.
+    if not os.path.exists(sp):
+        try:
+            from fetch_assets import ensure_assets
+            ensure_assets()
+        except Exception as _e:  # noqa: BLE001 - never block startup on the fetch helper
+            print(f"[startup] asset auto-fetch skipped: {_e}")
     app=FastAPI(title="GridLock API", version=settings.VERSION)
     app.add_middleware(CORSMiddleware, allow_origins=settings.CORS_ORIGINS,
                        allow_methods=["*"], allow_headers=["*"])
-    svc=ScoringService(scores_parquet or settings.SCORES_PARQUET, settings.IMPACT_MODEL)
+    svc=ScoringService(sp, settings.IMPACT_MODEL)
     mappls=MapplsClient(settings.MAPPLS_CACHE, _key(settings.MAPPLS_SECRETS),
                         breaker_fails=settings.BREAKER_FAILS, cooldown=settings.BREAKER_COOLDOWN)
     rcp_lookup=load_rcp()

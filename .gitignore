@@ -5,10 +5,20 @@ __pycache__/
 *.parquet
 jan to may police violation_anonymized791b166.csv
 jan to may*.csv
-fe_work/
+# fe_work: ignore the heavy pipeline intermediates, but COMMIT the runtime artifacts
+# (cell_scores.parquet + everything in fe_out: model + scored geojson/csv layers)
+fe_work/*
+!fe_work/cell_scores.parquet
+!fe_work/fe_out/
 .mappls_secrets
 .mappls_cache/
+# web bundle: commit the generated data layers so the app runs on a fresh clone
 web/public/data/*
 !web/public/data/.gitkeep
+!web/public/data/*.geojson
+!web/public/data/*.json
+!web/public/data/*.csv
 .superpowers/
 .DS_Store
+.assets_url
+.assets_cache/

@@ -1,0 +1,59 @@
+{
+  "artifacts_version": "0.1.0",
+  "files": [
+    {
+      "name": ".gitkeep",
+      "sha256": "e3b0c44298fc1c14",
+      "bytes": 0
+    },
+    {
+      "name": "blindspots.geojson",
+      "sha256": "b47bc50087e02948",
+      "bytes": 23231
+    },
+    {
+      "name": "cells.geojson",
+      "sha256": "ac5af5028d0e21f6",
+      "bytes": 2727155
+    },
+    {
+      "name": "kde_points.csv",
+      "sha256": "68cb33320761420d",
+      "bytes": 365414
+    },
+    {
+      "name": "priority_table.json",
+      "sha256": "492819ea594f5a94",
+      "bytes": 13836
+    },
+    {
+      "name": "rcp.csv",
+      "sha256": "79a489f0d11a5252",
+      "bytes": 1159
+    },
+    {
+      "name": "rcp.geojson",
+      "sha256": "75fab5c16378fdc7",
+      "bytes": 3662
+    },
+    {
+      "name": "rollup_gh5.csv",
+      "sha256": "9bd68afac93cdde3",
+      "bytes": 4869
+    },
+    {
+      "name": "rollup_gh6.csv",
+      "sha256": "4ba765455c19405c",
+      "bytes": 62978
+    },
+    {
+      "name": "top_enriched.geojson",
+      "sha256": "e1c5b7cac58b15c2",
+      "bytes": 24600
+    }
+  ],
+  "headline_stats": {
+    "zones": 5492,
+    "ranked": 792
+  }
+}

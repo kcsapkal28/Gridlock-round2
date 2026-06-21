@@ -112,16 +112,22 @@ Full data inventory: [`fe/findings/DATAFLOW_AND_FRONTEND.md`](fe/findings/DATAFL
 - The organiser dataset `jan to may police violation_anonymized791b166.csv` placed at the repo
   root. **It is gitignored and not in this repo** (organiser data — not redistributed).
 
-### 1. Generate the scoring artifacts (one-time)
-The heavy artifacts (`cell_scores.parquet`, the data bundle) are **not committed** — regenerate them:
+### 1. Runtime artifacts (model + scored cells)
+**Already in the repo — nothing to do.** The scored cells, LightGBM model, geojson layers
+(`fe_work/cell_scores.parquet`, `fe_work/fe_out/*`) and the prebuilt frontend bundle
+(`web/public/data/*`) are committed, so a fresh clone runs with zero extra steps.
 
+<details><summary>Optional: regenerate the artifacts from the dataset</summary>
+
+Needs the organiser CSV at the repo root:
 ```bash
-# locally (rewrites the Kaggle paths to your local CSV + ./fe_work)
-python run_local.py fe/cells/*.py
-python mapmyindia_enrich.py 50          # optional MapMyIndia capacity layer (cached)
+python run_local.py fe/cells/*.py    # → fe_work/cell_scores.parquet + fe_work/fe_out/*
+python mapmyindia_enrich.py 50       # optional MapMyIndia capacity layer (cached)
 ```
-…or run `gridlock_eda.ipynb` → `gridlock_fe.ipynb` on Kaggle and pull the outputs. Exact
-output files are listed in [`fe/findings/DATAFLOW_AND_FRONTEND.md`](fe/findings/DATAFLOW_AND_FRONTEND.md).
+…or run `gridlock_eda.ipynb` → `gridlock_fe.ipynb` on Kaggle. Output inventory:
+[`fe/findings/DATAFLOW_AND_FRONTEND.md`](fe/findings/DATAFLOW_AND_FRONTEND.md).
+A `fetch_assets.py` Drive-download fallback also exists (see `.assets_url.example`).
+</details>
 
 ### 2. Backend (FastAPI)
 ```bash
