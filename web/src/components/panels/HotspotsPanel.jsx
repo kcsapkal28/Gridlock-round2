@@ -20,7 +20,7 @@ export default function HotspotsPanel({ stats, tops, rcp, selected, onSelect }) 
       </div>
       <div className="stats">
         <div className="stat"><div className="v">{stats.zones.toLocaleString()}</div><div className="k">Zones scored</div></div>
-        <div className="stat"><div className="v">{stats.ranked.toLocaleString()}</div><div className="k">Ranked (n≥50)</div></div>
+        <div className="stat"><div className="v">{stats.ranked.toLocaleString()}</div><div className="k" title="Zones with at least 50 citations — enough data to rank with confidence">Rankable zones (≥50 tickets)</div></div>
         <div className="stat"><div className="v">{stats.netDelay}<span style={{ fontSize: 13 }}> min</span></div><div className="k">Measured delay (top corridors)</div></div>
         <div className="stat"><div className="v">{roi}<span style={{ fontSize: 13 }}> min</span></div><div className="k">Relieved if top-{topN} cleared</div></div>
       </div>
@@ -36,8 +36,9 @@ export default function HotspotsPanel({ stats, tops, rcp, selected, onSelect }) 
         <div key={z.gh7} className={"card" + (z.gh7 === selected ? " sel" : "")} onClick={() => onSelect(z)}>
           <div className="row">
             <span className="name">#{z.rank} · <span className="mono">{z.gh7}</span></span>
-            <span className="score" style={{ color: "var(--warn)" }}>{(+z.impact).toFixed(0)}</span>
+            <span className="score" style={{ color: "var(--warn)" }}>{(+z.impact).toFixed(0)}<span style={{ fontSize: 10, color: "var(--muted)", fontWeight: 400 }}>/100</span></span>
           </div>
+          <div className="kv">Rank · impact score</div>
           <div className="meta">
             {Math.round(z.tier3_share * 100)}% carriageway-blocking · {Math.round(z.heavy_share * 100)}% heavy · {z.n} citations
             {rcpByGh[z.gh7] != null && <> · <b style={{ color: "var(--hot)" }}>{rcpByGh[z.gh7].toFixed(1)} min delay</b></>}

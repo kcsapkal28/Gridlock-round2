@@ -22,3 +22,5 @@ web/public/data/*
 .DS_Store
 .assets_url
 .assets_cache/
+
+.claude/launch.json

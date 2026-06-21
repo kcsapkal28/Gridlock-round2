@@ -34,13 +34,24 @@ def impedance(waypoints, df, rcp_lookup, mappls, min_impact=80.0):
     total=round(total,2)
     o=(waypoints[0]["lat"],waypoints[0]["lng"]); d=(waypoints[-1]["lat"],waypoints[-1]["lng"])
     baseline=mappls.route([o,d])
-    detour=None
+    detour=None; worst=None
     if affected:
         worst=max(affected,key=lambda a:a["delay_min"])
         # perpendicular via-point to force a detour around the worst choke
         dlat,dlng=d[0]-o[0],d[1]-o[1]; nrm=math.hypot(dlat,dlng) or 1.0
         via=(worst["lat"]-dlng/nrm*0.004, worst["lon"]+dlat/nrm*0.004)
         detour=mappls.route([o,via,d])
+    # When there's no live routing, thread the straight-line fallback THROUGH the choke
+    # cells (ordered along O->D) so the drawn route bends through the affected zones
+    # instead of being a bare A->B segment.
+    live = baseline.get("source") in ("live","cache")
+    if not live and affected:
+        def _proj(c): return (c["lat"]-o[0])*(d[0]-o[0]) + (c["lon"]-o[1])*(d[1]-o[1])
+        mids=sorted(affected, key=_proj)
+        baseline={**baseline, "geometry":[[o[1],o[0]]]+[[c["lon"],c["lat"]] for c in mids]+[[d[1],d[0]]]}
+    # Recoverable = the delay of the worst choke the detour actually routes around
+    # (NOT the whole-route total — the reroute avoids one chokepoint, not every cell).
+    recoverable = round(worst["delay_min"],2) if worst else 0.0
     return {
         "impedance_delay_mins": total,
         "sla_risk": _sla(total),
@@ -48,6 +59,10 @@ def impedance(waypoints, df, rcp_lookup, mappls, min_impact=80.0):
         "n_affected": len(affected),
         "baseline_route": baseline,
         "detour_route": detour,
-        "minutes_saved_by_detour": total,   # detouring avoids the choke-point delay
+        "minutes_saved_by_detour": recoverable,
+        "worst_choke": worst,
+        "origin": {"lat":o[0],"lng":o[1]},
+        "dest": {"lat":d[0],"lng":d[1]},
+        "routing_live": live,
         "source": baseline.get("source"),
     }

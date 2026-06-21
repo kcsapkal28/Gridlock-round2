@@ -8,7 +8,7 @@ const PRESETS = [
   { name: "Electronic City → KR Puram", wp: [{ lat: 12.842, lng: 77.660 }, { lat: 13.008, lng: 77.696 }] },
 ];
 
-export default function LogisticsSidebar({ route, busy, onAnalyze }) {
+export default function LogisticsSidebar({ route, busy, onAnalyze, onFocus }) {
   return (
     <div className="sidebar">
       <div className="banner">
@@ -28,7 +28,7 @@ export default function LogisticsSidebar({ route, busy, onAnalyze }) {
           <div className="stats" style={{ marginTop: 14 }}>
             <div className="stat">
               <div className="metric-big" style={{ color: "var(--hot)" }}>{route.impedance_delay_mins}<span style={{ fontSize: 14 }}> min</span></div>
-              <div className="k">Network delay on route</div>
+              <div className="k">Total delay added by parking on this route</div>
             </div>
             <div className="stat">
               <div className="metric-big risk" style={{ color: slaColor[route.sla_risk] }}>{route.sla_risk}</div>
@@ -36,24 +36,31 @@ export default function LogisticsSidebar({ route, busy, onAnalyze }) {
             </div>
           </div>
           <div className="stat" style={{ marginBottom: 12 }}>
-            <div className="v" style={{ color: "var(--good)" }}>{route.minutes_saved_by_detour} min</div>
-            <div className="k">Recoverable via detour ({route.n_affected} choke cells)</div>
+            <div className="v" style={{ color: "var(--good)" }}>{route.minutes_saved_by_detour}<span style={{ fontSize: 13 }}> min</span></div>
+            <div className="k">Avoidable by rerouting around the worst choke ({route.n_affected} choke cells on route)</div>
           </div>
 
+          {route.routing_live === false && (
+            <div className="muted" style={{ fontSize: 11, marginBottom: 8 }}>
+              Straight-line preview through the choke zones — add a MapMyIndia key for road-accurate routing.
+            </div>
+          )}
           <div className="muted" style={{ marginBottom: 8 }}>
             <span style={{ color: "var(--hot)" }}>━</span> blocked route ·
             <span style={{ color: "var(--good)" }}> ━</span> optimized detour ·
-            route source: {route.source}
+            <span style={{ color: "#5dcaa5" }}> ●</span> pickup ·
+            <span style={{ color: "#78a2ff" }}> ●</span> drop
           </div>
 
           <div className="section-title">Choke points on this route</div>
+          {(route.affected_cells || []).length > 0 && <div className="muted" style={{ marginBottom: 6, fontSize: 11 }}>Tap a choke point to locate it on the map.</div>}
           {(route.affected_cells || []).slice(0, 12).map((c) => (
-            <div key={c.gh7} className="card">
+            <div key={c.gh7} className="card" onClick={() => onFocus?.(c.lat, c.lon)}>
               <div className="row">
                 <span className="name mono">{c.gh7}</span>
-                <span className="score" style={{ color: "var(--hot)" }}>{c.delay_min.toFixed(1)} min</span>
+                <span className="score" style={{ color: "var(--hot)" }}>+{c.delay_min.toFixed(1)}<span style={{ fontSize: 10, color: "var(--muted)", fontWeight: 400 }}> min</span></span>
               </div>
-              <div className="meta">{c.primary_infraction_type || "parking"} · {c.dominant_vehicle_class || "mixed"} · impact {c.impact}</div>
+              <div className="meta">{c.primary_infraction_type || "parking"} · {c.dominant_vehicle_class || "mixed"} · impact {c.impact}/100</div>
             </div>
           ))}
           {route.n_affected === 0 && <div className="muted">No active hotspots on this route — clear run. ✅</div>}

@@ -105,3 +105,23 @@ body::after {
 .btn:hover:not(:disabled) { border-color: var(--amber); color: var(--amber); transform: translateX(2px); }
 .btn:disabled { opacity: .5; cursor: default; }
 .muted { color: var(--muted); font-size: 12px; }
+
+/* small caption under a card score, and an inline tag */
+.card .kv { font-family: var(--mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: .07em;
+  color: var(--faint); margin-top: 2px; }
+.tag { display: inline-block; font-family: var(--mono); font-size: 9px; text-transform: uppercase;
+  letter-spacing: .05em; padding: 1px 6px; border-radius: 999px; background: #2a2410; color: #ffb23e; }
+
+/* on-map impact-filter control (top-left of the map) */
+.map-ctrl { position: absolute; top: 14px; left: 14px; z-index: 5; width: 220px;
+  background: rgba(10,14,22,.9); backdrop-filter: blur(8px); border: 1px solid var(--line);
+  border-radius: 10px; padding: 11px 13px; }
+.mc-title { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--muted); margin-bottom: 8px; }
+.mc-check { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text); cursor: pointer; }
+.mc-check input { accent-color: var(--amber); width: 15px; height: 15px; cursor: pointer; }
+.mc-slider { margin: 9px 0 4px; }
+.mc-lab { font-size: 11px; color: var(--muted); display: block; margin-bottom: 4px; }
+.mc-lab b { color: var(--amber); font-variant-numeric: tabular-nums; }
+.mc-slider input[type=range] { width: 100%; accent-color: var(--amber); cursor: pointer; }
+.mc-count { font-family: var(--mono); font-size: 10px; color: var(--faint); margin-top: 2px; }

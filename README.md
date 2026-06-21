@@ -51,6 +51,9 @@ with four operational modes:
 - **What-If** — explore the impact surface and thresholds.
 - **Blind-spot** — zones high on impact-character but low on coverage (enforcement gaps patrol misses).
 
+The map has an **impact-threshold filter** (show all zones, or only those with impact ≥ a
+chosen 0–100 cut-off) and an optional **police-station overlay** for geographic reference.
+
 ### 3. Flipkart Logistics Resiliency (delivery persona)
 Detect parking friction on a delivery route, quantify SLA delay, and reroute around choke
 points using the impedance loop (MapMyIndia Routing detour cost). Route metrics + choke-point list.
