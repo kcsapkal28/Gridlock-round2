@@ -45,6 +45,19 @@ def create_app(scores_parquet=None):
     rcp_lookup=load_rcp(settings.RCP_CSV)
     stations=_load_json(settings.STATIONS_JSON, [])
     gazetteer=build_gazetteer(stations)
+    _mappls_bykey={}   # judge-supplied keys → per-key client (preserves cache/breaker per key)
+
+    def mappls_for(request):
+        """Use a judge's X-Mappls-Key header (per-request) when present, else the default client."""
+        k=(request.headers.get("x-mappls-key") or "").strip() if request else ""
+        if not k:
+            return mappls
+        c=_mappls_bykey.get(k)
+        if c is None:
+            c=MapplsClient(settings.MAPPLS_CACHE, k, breaker_fails=settings.BREAKER_FAILS,
+                           cooldown=settings.BREAKER_COOLDOWN)
+            _mappls_bykey[k]=c
+        return c
 
     @app.middleware("http")
     async def reqid(request: Request, call_next):
@@ -56,9 +69,9 @@ def create_app(scores_parquet=None):
         return JSONResponse(status_code=status, content={"error":{"code":code,"message":msg,"request_id":rid}})
 
     @app.get("/api/v1/health", response_model=Health)
-    def health():
+    def health(request: Request):
         return Health(status="ok", version=settings.VERSION, artifacts_version=settings.VERSION,
-                      model_loaded=svc.model_loaded, mappls=mappls.status())
+                      model_loaded=svc.model_loaded, mappls=mappls_for(request).status())
 
     @app.post("/api/v1/score", response_model=ScoreResult)
     def score(req: ScoreRequest):
@@ -71,8 +84,8 @@ def create_app(scores_parquet=None):
         return svc._row(i)
 
     @app.get("/api/v1/mappls/revgeocode")
-    def revgeocode(lat:float, lng:float):
-        return mappls.revgeocode(lat,lng)
+    def revgeocode(lat:float, lng:float, request:Request):
+        return mappls_for(request).revgeocode(lat,lng)
 
     @app.get("/api/v1/triage/hotspots")
     def triage(min_impact: float = 0.0, limit: int = 500):
@@ -89,9 +102,9 @@ def create_app(scores_parquet=None):
         return {"type":"FeatureCollection","features":feats}
 
     @app.get("/api/v1/triage/patrol-plan")
-    def patrol_plan(units: int = 3, topk: int = 15, priority: str = "impact",
+    def patrol_plan(request: Request, units: int = 3, topk: int = 15, priority: str = "impact",
                     start_from_station: bool = True):
-        return build_plan(svc.df, mappls, units=units, topk=topk, priority=priority,
+        return build_plan(svc.df, mappls_for(request), units=units, topk=topk, priority=priority,
                           start_from_station=start_from_station, stations=stations)
 
     @app.get("/api/v1/geocode")
@@ -100,9 +113,9 @@ def create_app(scores_parquet=None):
         return resolve_place(q, gazetteer)
 
     @app.post("/api/v1/logistics/impedance-loop")
-    def impedance_loop(req: ImpedanceRequest):
+    def impedance_loop(req: ImpedanceRequest, request: Request):
         wps=[{"lat":w.lat,"lng":w.lng} for w in req.waypoints]
-        return impedance(wps, svc.df, rcp_lookup, mappls, min_impact=req.min_impact)
+        return impedance(wps, svc.df, rcp_lookup, mappls_for(request), min_impact=req.min_impact)
 
     @app.get("/api/v1/logistics/route-by-name")
     def route_by_name(origin: str, dest: str, min_impact: float = 80.0, request: Request = None):
@@ -114,7 +127,7 @@ def create_app(scores_parquet=None):
         if "error" in d:
             return err(422,"geocode_failed",f"dest: {d['error']}", getattr(request.state,"rid",""))
         wps=[{"lat":o["lat"],"lng":o["lon"]},{"lat":d["lat"],"lng":d["lon"]}]
-        res=impedance(wps, svc.df, rcp_lookup, mappls, min_impact=min_impact)
+        res=impedance(wps, svc.df, rcp_lookup, mappls_for(request), min_impact=min_impact)
         res["origin_name"]=o["name"]; res["dest_name"]=d["name"]
         return res
 

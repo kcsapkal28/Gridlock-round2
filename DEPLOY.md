@@ -121,6 +121,13 @@ Use this if you prefer not to use the Blueprint.
 | `MAPPLS_KEY` | api | (from file) | Optional; enables real Distance-Matrix/Routing |
 | `VITE_API_BASE` | web | `""` | Backend URL, baked into the build |
 
+> **No server keys needed for evaluators.** The app has an in-UI **⚙ API Keys** panel (top-right).
+> Anyone can paste their own **Mappls** and/or **Anthropic** key there — keys are stored in *their*
+> browser and sent per-request as headers (`X-Mappls-Key` / `X-Anthropic-Key`); the server never stores
+> them. Mappls enables road-accurate routing; Anthropic powers the AI copilot (called directly, so the
+> local proxy is **not** required in the cloud). Setting `MAPPLS_KEY` / `AI_API_KEY` server-side is just
+> the alternative if you want those on by default for everyone.
+
 ---
 
 ## 6. Post-deploy verification checklist

@@ -1,4 +1,6 @@
-"""Thin Claude wrapper over the local claude-openai proxy (Anthropic-native, port 4001).
+"""Thin Claude wrapper. Supports two backends, chosen per construction:
+- the local claude-openai proxy (Anthropic-native, port 4001) for local dev, and
+- a judge-supplied Anthropic API key calling api.anthropic.com DIRECTLY (base_url=None).
 
 Two entry points:
 - `complete(system, user)`  — single model call, returns text (brief / explain / insights).
@@ -11,34 +13,61 @@ browser via `ui_actions`, which this loop accumulates separately and never sends
 import json
 import time
 
+_DEFAULT = object()   # sentinel: "use settings.AI_BASE_URL" (vs. None = direct Anthropic)
+
 
 class AIClient:
-    def __init__(self, settings):
+    def __init__(self, settings, *, api_key=None, base_url=_DEFAULT, model=None, enabled=None):
         self.s = settings
+        self.api_key = api_key or settings.AI_API_KEY
+        self.base_url = settings.AI_BASE_URL if base_url is _DEFAULT else base_url
+        self.model = model or settings.AI_MODEL
+        self.enabled = settings.AI_ENABLED if enabled is None else enabled
         self._client = None
         self._avail = None          # cached availability
         self._avail_ts = 0.0
-        if settings.AI_ENABLED:
+        if self.enabled and self.api_key:
             try:
                 import anthropic     # optional dependency — absent => AI simply stays offline
-                self._client = anthropic.Anthropic(
-                    api_key=settings.AI_API_KEY, base_url=settings.AI_BASE_URL,
-                    timeout=settings.AI_TIMEOUT, max_retries=1)
+                kw = dict(api_key=self.api_key, timeout=settings.AI_TIMEOUT, max_retries=1)
+                if self.base_url:     # proxy mode; omit for direct Anthropic (uses SDK default)
+                    kw["base_url"] = self.base_url
+                self._client = anthropic.Anthropic(**kw)
             except Exception:
                 self._client = None
 
+    @classmethod
+    def for_request(cls, settings, headers, default):
+        """Pick the right client for a request. If a judge supplied an Anthropic key via the
+        X-Anthropic-Key header, build a per-key client that calls Anthropic directly; otherwise
+        return the default (proxy/env) client. Per-key clients are cached on the default."""
+        key = (headers.get("x-anthropic-key") or "").strip()
+        if not key:
+            return default
+        model = (headers.get("x-ai-model") or "").strip() or "claude-sonnet-4-6"
+        cache = getattr(default, "_byo_cache", None)
+        if cache is None:
+            cache = {}
+            try: default._byo_cache = cache
+            except Exception: pass
+        ck = f"{key}|{model}"
+        c = cache.get(ck)
+        if c is None:
+            c = cls(settings, api_key=key, base_url=None, model=model, enabled=True)
+            cache[ck] = c
+        return c
+
     # ---- availability: cheap key-validating probe (count_tokens), cached 30s ----
-    # Returns True only when AI is enabled AND the proxy is reachable AND the key is valid.
-    # Distinguishes all the "no key" cases: missing SDK / disabled / dead proxy / bad key.
+    # Returns True only when AI is enabled AND the endpoint is reachable AND the key is valid.
     def available(self):
-        if not (self.s.AI_ENABLED and self._client):
+        if not (self.enabled and self._client):
             return False
         now = time.monotonic()
         if self._avail is not None and (now - self._avail_ts) < 30:
             return self._avail
         try:
             self._client.messages.count_tokens(
-                model=self.s.AI_MODEL, messages=[{"role": "user", "content": "ping"}])
+                model=self.model, messages=[{"role": "user", "content": "ping"}])
             ok = True
         except Exception:
             ok = False
@@ -54,7 +83,7 @@ class AIClient:
 
     def complete(self, system, user, max_tokens=900):
         r = self._client.messages.create(
-            model=self.s.AI_MODEL, max_tokens=max_tokens, system=system,
+            model=self.model, max_tokens=max_tokens, system=system,
             messages=[{"role": "user", "content": user}])
         return "".join(b.text for b in r.content if b.type == "text").strip()
 
@@ -65,7 +94,7 @@ class AIClient:
         ui_actions = []
         for _ in range(self.s.AI_MAX_TOOL_ITERS):
             r = self._client.messages.create(
-                model=self.s.AI_MODEL, max_tokens=max_tokens, system=system,
+                model=self.model, max_tokens=max_tokens, system=system,
                 tools=tools, messages=msgs)
             if r.stop_reason != "tool_use":
                 text = "".join(b.text for b in r.content if b.type == "text").strip()
@@ -87,7 +116,7 @@ class AIClient:
         # iteration cap hit — make one final no-tools call to summarise
         try:
             r = self._client.messages.create(
-                model=self.s.AI_MODEL, max_tokens=max_tokens, system=system, messages=msgs)
+                model=self.model, max_tokens=max_tokens, system=system, messages=msgs)
             text = "".join(b.text for b in r.content if b.type == "text").strip()
         except Exception:
             text = "I gathered the data but couldn't finish composing a reply — please retry."

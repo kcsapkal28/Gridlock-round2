@@ -2,7 +2,7 @@
 already-constructed scoring service + MapMyIndia client, so it shares their loaded artifacts."""
 import json
 import os
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from pydantic import BaseModel
 
 from api.config import settings
@@ -28,6 +28,7 @@ class CommandReq(BaseModel):
 class ExplainReq(BaseModel):
     gh7: str | None = None
     route_summary: dict | None = None
+    scenario: dict | None = None
 
 
 def build_ai_router(svc, mappls):
@@ -38,12 +39,20 @@ def build_ai_router(svc, mappls):
     ex = ToolExecutor(svc, mappls, rcp, blind, stations)
     r = APIRouter(prefix="/api/v1/ai")
 
+    def pick(request):
+        """Per-request client: a judge's X-Anthropic-Key (direct Anthropic) or the default."""
+        return AIClient.for_request(settings, request.headers, ai)
+
     @r.get("/health")
-    def health():
-        return {"available": ai.available(), "model": settings.AI_MODEL if settings.AI_ENABLED else None}
+    def health(request: Request):
+        c = pick(request)
+        byo = bool((request.headers.get("x-anthropic-key") or "").strip())
+        return {"available": c.available(), "model": c.model if c.available() else None,
+                "source": ("byo-key" if byo else "proxy") if c.available() else "off"}
 
     @r.post("/command")
-    def command(req: CommandReq):
+    def command(req: CommandReq, request: Request):
+        ai = pick(request)
         if not ai.available():
             return {"available": False, "reply": "Copilot is offline.", "ui_actions": []}
         hist = [m for m in (req.history or []) if m.get("role") in ("user", "assistant") and m.get("content")]
@@ -58,7 +67,8 @@ def build_ai_router(svc, mappls):
             return {"available": False, "reply": "Copilot is unavailable right now.", "ui_actions": []}
 
     @r.get("/brief")
-    def brief():
+    def brief(request: Request):
+        ai = pick(request)
         if not ai.available():
             return {"available": False, "brief": ""}
         try:
@@ -73,7 +83,8 @@ def build_ai_router(svc, mappls):
             return {"available": False, "brief": ""}
 
     @r.post("/explain")
-    def explain(req: ExplainReq):
+    def explain(req: ExplainReq, request: Request):
+        ai = pick(request)
         if not ai.available():
             return {"available": False, "text": ""}
         try:
@@ -83,6 +94,9 @@ def build_ai_router(svc, mappls):
             elif req.route_summary:
                 data = req.route_summary
                 task = prompts.EXPLAIN_ROUTE_TASK
+            elif req.scenario:
+                data = req.scenario
+                task = prompts.EXPLAIN_SCENARIO_TASK
             else:
                 return {"available": True, "text": ""}
             text = ai.complete(prompts.EXPLAIN_SYSTEM, task.format(data=json.dumps(data, default=str)), max_tokens=220)
@@ -92,7 +106,8 @@ def build_ai_router(svc, mappls):
             return {"available": False, "text": ""}
 
     @r.get("/insights")
-    def insights():
+    def insights(request: Request):
+        ai = pick(request)
         if not ai.available():
             return {"available": False, "insights": []}
         try:

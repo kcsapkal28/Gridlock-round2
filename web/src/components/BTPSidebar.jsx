@@ -21,7 +21,8 @@ export default function BTPSidebar(p) {
       </div>
       {p.btpMode === "hotspots" && <HotspotsPanel stats={p.stats} tops={p.tops} rcp={p.rcp} selected={p.selected} onSelect={p.onSelect} />}
       {p.btpMode === "patrol" && <PatrolPanel onPlan={p.onPlan} plan={p.plan} onFocus={p.onFocus} />}
-      {p.btpMode === "whatif" && <WhatIfPanel tops={p.tops} rcp={p.rcp} multi={p.multi} onPreset={p.onPreset} />}
+      {p.btpMode === "whatif" && <WhatIfPanel tops={p.tops} rcp={p.rcp} multi={p.multi}
+        onSetMulti={p.onSetMulti} onSelect={p.onSelect} aiAvail={p.aiAvail} />}
       {p.btpMode === "blind" && <BlindSpotsPanel blind={p.blind} onSelect={p.onSelect} />}
       {p.btpMode === "hotspots" && <Insights available={p.aiAvail} />}
     </div>

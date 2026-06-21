@@ -28,12 +28,28 @@ def decode_polyline(s, precision=6):
         coords.append([lng/factor, lat/factor])
     return coords
 
-def cells_near_path(waypoints, df, radius_km=0.20, limit=40):
-    """Indices of df rows within radius_km of any waypoint (lat/lon cols)."""
+def densify(waypoints, step_km=0.3):
+    """Sample points along the polyline through waypoints (~step_km apart). So 'near the path'
+    means near the actual line travelled, not just near the endpoints."""
+    wps=[(w["lat"], w["lng"]) for w in waypoints]
+    if len(wps)<2:
+        return wps
+    pts=[]
+    for a,b in zip(wps, wps[1:]):
+        seg=haversine_km(a[0],a[1],b[0],b[1])
+        n=max(1, int(seg/step_km))
+        for k in range(n+1):
+            t=k/n
+            pts.append((a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t))
+    return pts
+
+def cells_near_path(waypoints, df, radius_km=0.25, limit=60):
+    """Indices of df rows within radius_km of the route line (waypoints densified into a polyline)."""
+    pts=densify(waypoints)
     hit=set()
     lats=df["lat"].tolist(); lons=df["lon"].tolist()
-    for w in waypoints:
+    for pa,po in pts:
         for i,(la,lo) in enumerate(zip(lats,lons)):
-            if haversine_km(w["lat"], w["lng"], la, lo) <= radius_km:
+            if haversine_km(pa, po, la, lo) <= radius_km:
                 hit.add(i)
     return list(hit)[:limit] if limit else list(hit)

@@ -45,6 +45,13 @@ EXPLAIN_ROUTE_TASK = (
     "In 2 short sentences, give a delivery dispatcher a recommendation for this route: the SLA risk "
     "and whether to reroute, grounded in the numbers. No preamble.\n\nROUTE:\n{data}"
 )
+EXPLAIN_SCENARIO_TASK = (
+    "This is an enforcement WHAT-IF plan: deploy N patrol units in a given mode to clear the chosen "
+    "zones. In 2–3 short sentences for command staff: confirm what this plan achieves (relief, % of "
+    "tracked congestion, officer-hours) and call out the key trade-off — note where diminishing "
+    "returns set in. Treat money/vehicle-hour figures as planning estimates, not measured facts. "
+    "Reference the numbers. No preamble.\n\nPLAN:\n{data}"
+)
 
 INSIGHTS_SYSTEM = (
     "You are GridLock's analyst surfacing non-obvious enforcement insights. " + PRIMER +

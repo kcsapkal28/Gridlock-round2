@@ -4,9 +4,10 @@ import { aiExplain } from "../../api.js";
 const explainCache = new Map();   // key -> text, so re-selecting a zone is instant
 
 // Contextual "AI read": why-this-matters + recommended action for a selected zone or analyzed route.
-export default function AiRead({ available, gh7, routeSummary }) {
+export default function AiRead({ available, gh7, routeSummary, scenario }) {
   const routeKey = JSON.stringify(routeSummary || null);
-  const key = gh7 ? `z:${gh7}` : (routeSummary ? `r:${routeKey}` : null);
+  const sceneKey = JSON.stringify(scenario || null);
+  const key = gh7 ? `z:${gh7}` : routeSummary ? `r:${routeKey}` : scenario ? `s:${sceneKey}` : null;
   const [text, setText] = useState((key && explainCache.get(key)) || "");
   const [busy, setBusy] = useState(false);
 
@@ -15,7 +16,8 @@ export default function AiRead({ available, gh7, routeSummary }) {
     if (explainCache.has(key)) { setText(explainCache.get(key)); setBusy(false); return; }
     let live = true;
     setBusy(true); setText("");
-    aiExplain(gh7 ? { gh7 } : { route_summary: routeSummary })
+    const body = gh7 ? { gh7 } : routeSummary ? { route_summary: routeSummary } : { scenario };
+    aiExplain(body)
       .then((d) => { explainCache.set(key, d.text || ""); if (live) setText(d.text || ""); })
       .catch(() => { if (live) setText(""); })
       .finally(() => { if (live) setBusy(false); });

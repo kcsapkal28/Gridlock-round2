@@ -18,7 +18,16 @@ def _sla(delay):
 
 def impedance(waypoints, df, rcp_lookup, mappls, min_impact=80.0):
     ranked=df[(df["ranked"]) & (df["impact"]>=min_impact)].reset_index(drop=True)
-    idx=cells_near_path(waypoints, ranked, radius_km=0.20, limit=60)
+    o=(waypoints[0]["lat"],waypoints[0]["lng"]); d=(waypoints[-1]["lat"],waypoints[-1]["lng"])
+    # Fetch the route first; when live, sample chokes along the ACTUAL road geometry (curves
+    # through the hotspot belt) instead of the straight O->D line. Falls back to the straight line.
+    baseline=mappls.route([o,d])
+    geom=baseline.get("geometry") or []
+    if baseline.get("source") in ("live","cache") and len(geom)>=2:
+        path_wps=[{"lat":pt[1],"lng":pt[0]} for pt in geom]   # geometry is [lng,lat]
+    else:
+        path_wps=waypoints
+    idx=cells_near_path(path_wps, ranked, radius_km=0.25, limit=60)
     affected=[]
     total=0.0
     for i in idx:
@@ -32,8 +41,6 @@ def impedance(waypoints, df, rcp_lookup, mappls, min_impact=80.0):
                          "primary_infraction_type":str(r.get("primary_infraction_type","")),
                          "dominant_vehicle_class":str(r.get("dominant_vehicle_class",""))})
     total=round(total,2)
-    o=(waypoints[0]["lat"],waypoints[0]["lng"]); d=(waypoints[-1]["lat"],waypoints[-1]["lng"])
-    baseline=mappls.route([o,d])
     detour=None; worst=None
     if affected:
         worst=max(affected,key=lambda a:a["delay_min"])

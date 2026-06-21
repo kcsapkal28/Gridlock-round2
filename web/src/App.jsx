@@ -4,6 +4,7 @@ import MapView from "./components/MapView.jsx";
 import BTPSidebar from "./components/BTPSidebar.jsx";
 import LogisticsSidebar from "./components/LogisticsSidebar.jsx";
 import CommandBar from "./components/ai/CommandBar.jsx";
+import SettingsModal from "./components/SettingsModal.jsx";
 import { applyAiActions } from "./lib/aiActions.js";
 
 const INITIAL = { longitude: 77.59, latitude: 12.97, zoom: 11, pitch: 0, bearing: 0 };
@@ -29,15 +30,19 @@ export default function App() {
   const [impactMin, setImpactMin] = useState(50);
   const [showStations, setShowStations] = useState(false);
   const [aiAvail, setAiAvail] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
+  function refreshStatus() {
+    getHealth().then(setHealth);
+    aiHealth().then((d) => setAiAvail(!!d.available));
+  }
   useEffect(() => {
     loadStatic("cells.geojson").then(setCells).catch(() => {});
     loadStatic("priority_table.json").then(setTops).catch(() => {});
     loadStatic("rcp.geojson").then(setRcp).catch(() => {});
     loadStatic("blindspots.geojson").then(setBlind).catch(() => {});
     loadStatic("stations.json").then(setStations).catch(() => {});
-    getHealth().then(setHealth);
-    aiHealth().then((d) => setAiAvail(!!d.available));
+    refreshStatus();
   }, []);
 
   const stats = useMemo(() => {
@@ -103,13 +108,15 @@ export default function App() {
           API {health ? "ONLINE" : <span style={{ color: "var(--warn)" }}>STATIC-ONLY</span>}
           {health && <> · MODEL {health.model_loaded ? "✓" : "—"} · MAPPLS {String(health.mappls).toUpperCase()}</>}
         </div>
+        <button className="gear-btn" onClick={() => setSettingsOpen(true)} title="API keys" aria-label="API key settings">⚙</button>
       </div>
 
       <div className={"body" + (sidebarOpen ? "" : " collapsed")}>
         {persona === "btp"
           ? <BTPSidebar btpMode={btpMode} setBtpMode={setBtpMode} stats={stats} tops={tops} rcp={rcp}
               blind={blind} selected={selected} onSelect={focusZone} onFocus={focusPoint}
-              plan={plan} onPlan={setPlan} multi={multi} onPreset={presetSelect} aiAvail={aiAvail} />
+              plan={plan} onPlan={setPlan} multi={multi} onPreset={presetSelect}
+              onSetMulti={setMulti} aiAvail={aiAvail} />
           : <LogisticsSidebar route={route} busy={busy} onAnalyze={analyzeRoute} onAnalyzeByName={analyzeByName}
               onFocus={focusPoint} aiAvail={aiAvail} onAiActions={aiApply} />}
         <button className="sidebar-toggle" onClick={() => setSidebarOpen((v) => !v)}
@@ -143,6 +150,7 @@ export default function App() {
           />
         </div>
       </div>
+      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} onSaved={refreshStatus} />
     </div>
   );
 }

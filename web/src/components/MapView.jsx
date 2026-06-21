@@ -169,7 +169,7 @@ function Legend({ mode, showStations }) {
   if (mode === "blind")
     return <div className="legend"><div><span style={{ color: "#e85bd0" }}>◯</span> Blind spot (under-enforced)</div>{station}</div>;
   if (mode === "patrol")
-    return <div className="legend"><div><Line c="#ffb23e" />Patrol route (by unit)</div><div><Dot c="#36d6c3" />Numbered stop</div>{station}</div>;
+    return <div className="legend"><div><Line c="#ffb23e" />Patrol route (by unit)</div><div><Dot c="#36d6c3" />Numbered stop</div><div><span style={{ color: "#78a2ff" }}>▲</span> Depot (police station)</div>{station}</div>;
   if (mode === "logistics")
     return <div className="legend">
       <div><Line c="#e24b4a" />Blocked route</div>
