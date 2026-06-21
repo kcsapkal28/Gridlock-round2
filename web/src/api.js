@@ -21,3 +21,34 @@ export async function impedanceLoop(waypoints, min_impact = 80) {
   if (!r.ok) throw new Error(`impedance ${r.status}`);
   return r.json();
 }
+
+// ---- AI copilot ----
+export async function aiHealth() {
+  try { const r = await fetch("/api/v1/ai/health"); return r.ok ? r.json() : { available: false }; }
+  catch { return { available: false }; }
+}
+export async function aiCommand(message, history = [], signal) {
+  const r = await fetch("/api/v1/ai/command", {
+    method: "POST", headers: { "content-type": "application/json" },
+    body: JSON.stringify({ message, history }), signal,
+  });
+  if (!r.ok) throw new Error(`ai command ${r.status}`);
+  return r.json();
+}
+export async function aiBrief() {
+  const r = await fetch("/api/v1/ai/brief");
+  if (!r.ok) throw new Error(`ai brief ${r.status}`);
+  return r.json();
+}
+export async function aiExplain(body) {
+  const r = await fetch("/api/v1/ai/explain", {
+    method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body),
+  });
+  if (!r.ok) throw new Error(`ai explain ${r.status}`);
+  return r.json();
+}
+export async function aiInsights() {
+  const r = await fetch("/api/v1/ai/insights");
+  if (!r.ok) throw new Error(`ai insights ${r.status}`);
+  return r.json();
+}

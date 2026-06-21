@@ -13,4 +13,13 @@ class Settings:
     MAPPLS_RATE_PER_MIN = int(os.environ.get("MAPPLS_RATE_PER_MIN", "60"))
     ROADCLASS_SNAP = os.environ.get("ROADCLASS_SNAP", "off")  # off until snap-to-road verified
     VERSION = "0.1.0"
+    # --- AI copilot (Claude via the local claude-openai proxy, port 4001 passthrough) ---
+    AI_ENABLED = os.environ.get("AI_ENABLED", "1") not in ("0", "false", "")
+    AI_BASE_URL = os.environ.get("AI_BASE_URL", "http://localhost:4001")
+    AI_API_KEY = os.environ.get("AI_API_KEY", "sk-proxy-694c3321a907a1f281483b767e3be689")
+    AI_MODEL = os.environ.get("AI_MODEL", "claude-sonnet-4-6")
+    AI_TIMEOUT = float(os.environ.get("AI_TIMEOUT", "30"))
+    AI_MAX_TOOL_ITERS = int(os.environ.get("AI_MAX_TOOL_ITERS", "5"))
+    AI_MODEL_SUMMARY_MAX_CHARS = int(os.environ.get("AI_MODEL_SUMMARY_MAX_CHARS", "1500"))
+    AI_HISTORY_EXCHANGES = int(os.environ.get("AI_HISTORY_EXCHANGES", "2"))
 settings = Settings()

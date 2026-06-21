@@ -16,5 +16,10 @@ pygeohash==1.2.0         # geohash-7 lookup
 scikit-learn==1.5.2
 lightgbm==4.5.0          # loads fe_work/fe_out/model_impact.txt (LightGBM booster)
 
+# --- AI copilot is OPTIONAL ---
+# The app runs fully without it. To enable the Claude copilot, additionally:
+#   pip install -r requirements-ai.txt   (and run the local Claude proxy)
+# Without the `anthropic` package / proxy / key, the AI surfaces simply show "offline".
+
 # --- tests ---
 pytest==9.1.0

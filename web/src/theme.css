@@ -125,3 +125,71 @@ body::after {
 .mc-lab b { color: var(--amber); font-variant-numeric: tabular-nums; }
 .mc-slider input[type=range] { width: 100%; accent-color: var(--amber); cursor: pointer; }
 .mc-count { font-family: var(--mono); font-size: 10px; color: var(--faint); margin-top: 2px; }
+
+/* ===== AI copilot ===== */
+/* command bar (top) */
+.cmdbar { flex: 1; position: relative; max-width: 620px; }
+.cmd-input { display: flex; align-items: center; gap: 9px; background: #0a0f18;
+  border: 1px solid var(--line2); border-radius: 9px; padding: 0 10px; height: 38px; transition: border-color .15s; }
+.cmd-input:focus-within { border-color: var(--amber); }
+.cmd-input.busy { border-color: var(--amber); }
+.cmd-input > i { color: var(--amber); font-size: 17px; }
+.cmd-input input { flex: 1; background: transparent; border: 0; color: var(--text);
+  font-family: var(--body); font-size: 13px; outline: none; }
+.cmd-input input::placeholder { color: var(--faint); }
+.cmd-input input:disabled { color: var(--faint); }
+.cmd-go { background: var(--amber); color: #1a1203; border: 0; border-radius: 6px; padding: 5px 12px;
+  font-family: var(--body); font-weight: 600; font-size: 12px; cursor: pointer; }
+.cmd-reply { position: absolute; top: 44px; left: 0; right: 0; z-index: 20;
+  display: flex; align-items: flex-start; gap: 9px; background: rgba(13,20,32,.97); backdrop-filter: blur(8px);
+  border: 1px solid var(--line2); border-radius: 10px; padding: 11px 13px; font-size: 13px; line-height: 1.5;
+  box-shadow: 0 8px 30px rgba(0,0,0,.45); animation: rise .25s both; }
+.cmd-reply.err { border-color: var(--hot); }
+.cmd-reply > i { color: var(--amber); font-size: 16px; margin-top: 1px; }
+.cmd-reply span { flex: 1; color: var(--text); }
+.cmd-x { background: transparent; border: 0; color: var(--faint); cursor: pointer; font-size: 15px; padding: 0; }
+.spin { animation: spin 1s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* AI brief card (sidebar) */
+.ai-brief { border: 1px solid var(--line2); border-radius: 11px; margin-bottom: 14px; overflow: hidden;
+  background: linear-gradient(135deg, rgba(255,178,62,.07), rgba(255,178,62,.015)); }
+.ai-brief-head { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px;
+  border-bottom: 1px solid var(--line); font-family: var(--mono); font-size: 11px; text-transform: uppercase;
+  letter-spacing: .07em; color: var(--amber); }
+.ai-brief-head i { margin-right: 5px; }
+.ai-refresh { background: transparent; border: 0; color: var(--muted); cursor: pointer; font-size: 14px; padding: 2px; }
+.ai-refresh:hover { color: var(--amber); }
+.ai-brief-body { padding: 11px 13px; }
+.ai-brief-body p { margin: 0 0 8px; font-size: 12.5px; line-height: 1.55; color: var(--text); }
+.ai-brief-body p:last-child { margin-bottom: 0; }
+.ai-skeleton { padding: 11px 13px; display: flex; flex-direction: column; gap: 8px; }
+.ai-skeleton span { height: 9px; border-radius: 4px; background: linear-gradient(90deg,#16202f,#1d2a3d,#16202f);
+  background-size: 200% 100%; animation: shimmer 1.3s infinite; }
+.ai-skeleton span:nth-child(2){width:80%}.ai-skeleton span:nth-child(3){width:60%}
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+/* AI read (zone/route) */
+.ai-read { border: 1px solid var(--line2); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px;
+  background: rgba(54,214,195,.05); }
+.ai-read-tag { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .07em;
+  color: var(--teal); margin-bottom: 6px; }
+.ai-read-tag i { margin-right: 4px; }
+.ai-read p { margin: 0; font-size: 12.5px; line-height: 1.55; color: var(--text); }
+
+/* AI insights */
+.ai-insights { margin-top: 16px; }
+.ai-insight { display: flex; align-items: flex-start; gap: 8px; background: var(--panel2);
+  border: 1px solid var(--line); border-left: 2px solid var(--amber); border-radius: 8px;
+  padding: 9px 11px; margin-bottom: 7px; font-size: 12px; line-height: 1.45; color: var(--text); }
+.ai-insight i { color: var(--amber); font-size: 14px; margin-top: 1px; }
+
+/* AI free-form route box (logistics) */
+.ai-routebox { display: flex; align-items: center; gap: 8px; background: #0a0f18;
+  border: 1px solid var(--line2); border-radius: 9px; padding: 0 8px 0 10px; height: 38px;
+  margin-bottom: 6px; transition: border-color .15s; }
+.ai-routebox:focus-within { border-color: var(--amber); }
+.ai-routebox > i { color: var(--amber); font-size: 16px; }
+.ai-routebox input { flex: 1; background: transparent; border: 0; color: var(--text);
+  font-family: var(--body); font-size: 12.5px; outline: none; }
+.ai-routebox input::placeholder { color: var(--faint); }

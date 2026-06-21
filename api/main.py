@@ -86,6 +86,13 @@ def create_app(scores_parquet=None):
         wps=[{"lat":w.lat,"lng":w.lng} for w in req.waypoints]
         return impedance(wps, svc.df, rcp_lookup, mappls, min_impact=req.min_impact)
 
+    # AI copilot (Claude via local proxy). Isolated router; degrades to "offline" if unreachable.
+    try:
+        from api.ai.routes import build_ai_router
+        app.include_router(build_ai_router(svc, mappls))
+    except Exception as _e:
+        print(f"[startup] AI copilot not mounted: {_e}")
+
     return app
 
 app=create_app()
