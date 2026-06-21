@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { aiInsights } from "../../api.js";
 
+let insightsCache = null;   // session cache — derived from static data
+
 // Proactive, data-derived insight flags (Claude phrases natively-computed candidates).
 export default function Insights({ available }) {
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState(insightsCache || []);
   useEffect(() => {
-    if (!available) return;
+    if (!available || insightsCache) return;
     let live = true;
-    aiInsights().then((d) => { if (live) setItems(d.insights || []); }).catch(() => {});
+    aiInsights().then((d) => { insightsCache = d.insights || []; if (live) setItems(insightsCache); }).catch(() => {});
     return () => { live = false; };
   }, [available]);
 
