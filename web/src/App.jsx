@@ -97,7 +97,7 @@ export default function App() {
           ? <BTPSidebar btpMode={btpMode} setBtpMode={setBtpMode} stats={stats} tops={tops} rcp={rcp}
               blind={blind} selected={selected} onSelect={focusZone} onFocus={focusPoint}
               plan={plan} onPlan={setPlan} multi={multi} onPreset={presetSelect} aiAvail={aiAvail} />
-          : <LogisticsSidebar route={route} busy={busy} onAnalyze={analyzeRoute} onFocus={focusPoint} aiAvail={aiAvail} />}
+          : <LogisticsSidebar route={route} busy={busy} onAnalyze={analyzeRoute} onFocus={focusPoint} aiAvail={aiAvail} onAiActions={aiApply} />}
         <div className="map-wrap">
           <div className="map-ctrl">
             <div className="mc-title">Impact filter</div>

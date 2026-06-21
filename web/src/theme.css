@@ -183,3 +183,13 @@ body::after {
   border: 1px solid var(--line); border-left: 2px solid var(--amber); border-radius: 8px;
   padding: 9px 11px; margin-bottom: 7px; font-size: 12px; line-height: 1.45; color: var(--text); }
 .ai-insight i { color: var(--amber); font-size: 14px; margin-top: 1px; }
+
+/* AI free-form route box (logistics) */
+.ai-routebox { display: flex; align-items: center; gap: 8px; background: #0a0f18;
+  border: 1px solid var(--line2); border-radius: 9px; padding: 0 8px 0 10px; height: 38px;
+  margin-bottom: 6px; transition: border-color .15s; }
+.ai-routebox:focus-within { border-color: var(--amber); }
+.ai-routebox > i { color: var(--amber); font-size: 16px; }
+.ai-routebox input { flex: 1; background: transparent; border: 0; color: var(--text);
+  font-family: var(--body); font-size: 12.5px; outline: none; }
+.ai-routebox input::placeholder { color: var(--faint); }

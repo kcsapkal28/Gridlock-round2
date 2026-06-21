@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { slaColor } from "../lib/color.js";
+import { aiCommand } from "../api.js";
 import AiRead from "./ai/AiRead.jsx";
 
 // Sample delivery routes across Bengaluru that cross known hotspot corridors.
@@ -7,9 +8,34 @@ const PRESETS = [
   { name: "Koramangala → Whitefield (ORR)", wp: [{ lat: 12.935, lng: 77.622 }, { lat: 12.997, lng: 77.669 }] },
   { name: "City Market → Hebbal", wp: [{ lat: 12.964, lng: 77.578 }, { lat: 13.035, lng: 77.589 }] },
   { name: "Electronic City → KR Puram", wp: [{ lat: 12.842, lng: 77.660 }, { lat: 13.008, lng: 77.696 }] },
+  { name: "Indiranagar → Marathahalli", wp: [{ lat: 12.971, lng: 77.641 }, { lat: 12.956, lng: 77.701 }] },
+  { name: "HSR Layout → Whitefield", wp: [{ lat: 12.911, lng: 77.647 }, { lat: 12.970, lng: 77.750 }] },
+  { name: "Jayanagar → Majestic", wp: [{ lat: 12.930, lng: 77.583 }, { lat: 12.977, lng: 77.572 }] },
+  { name: "Bellandur → MG Road", wp: [{ lat: 12.926, lng: 77.676 }, { lat: 12.975, lng: 77.606 }] },
+  { name: "Silk Board → Hebbal", wp: [{ lat: 12.917, lng: 77.622 }, { lat: 13.035, lng: 77.597 }] },
 ];
 
-export default function LogisticsSidebar({ route, busy, onAnalyze, onFocus, aiAvail }) {
+export default function LogisticsSidebar({ route, busy, onAnalyze, onFocus, aiAvail, onAiActions }) {
+  const [q, setQ] = useState("");
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiErr, setAiErr] = useState("");
+
+  async function runAi(e) {
+    e.preventDefault();
+    const text = q.trim();
+    if (!text || aiBusy) return;
+    setAiBusy(true); setAiErr("");
+    try {
+      const d = await aiCommand(`Analyze the delivery route: ${text}`);
+      onAiActions?.(d.ui_actions);
+      const hasRoute = (d.ui_actions || []).some((a) => a.type === "showRoute");
+      if (!hasRoute) setAiErr(d.reply || "Couldn't resolve that route — try two known areas.");
+      else setQ("");
+    } catch {
+      setAiErr("Copilot request failed — is the proxy running?");
+    } finally { setAiBusy(false); }
+  }
+
   return (
     <div className="sidebar">
       <div className="banner">
@@ -18,11 +44,25 @@ export default function LogisticsSidebar({ route, busy, onAnalyze, onFocus, aiAv
       </div>
 
       <div className="section-title">Simulate a delivery route</div>
+
+      {aiAvail && (
+        <>
+          <form className="ai-routebox" onSubmit={runAi}>
+            <i className={"ti " + (aiBusy ? "ti-loader-2 spin" : "ti-sparkles")} aria-hidden="true" />
+            <input value={q} onChange={(e) => setQ(e.target.value)} disabled={aiBusy}
+              placeholder="Describe any route — e.g. “HSR to Electronic City”" aria-label="AI route" />
+            <button type="submit" className="cmd-go" disabled={aiBusy || !q.trim()}>Go</button>
+          </form>
+          {aiErr && <div className="muted" style={{ color: "var(--hot)", marginBottom: 8, fontSize: 11 }}>{aiErr}</div>}
+          <div className="muted" style={{ fontSize: 11, margin: "2px 0 8px" }}>…or pick a sample corridor:</div>
+        </>
+      )}
+
       {PRESETS.map((p) => (
         <button key={p.name} className="btn alt" style={{ marginBottom: 6, textAlign: "left" }}
-          disabled={busy} onClick={() => onAnalyze(p.wp)}>{p.name}</button>
+          disabled={busy || aiBusy} onClick={() => onAnalyze(p.wp)}>{p.name}</button>
       ))}
-      {busy && <div className="muted" style={{ marginTop: 8 }}>Analyzing route impedance…</div>}
+      {(busy || aiBusy) && <div className="muted" style={{ marginTop: 8 }}>Analyzing route impedance…</div>}
 
       {route && (
         <>
