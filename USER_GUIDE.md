@@ -72,7 +72,7 @@ This "volume ≠ impact" insight is the backbone of every feature below.
 ## 3. The Congestion-Impact Score
 
 A single, explainable score (0–100) per geohash-7 cell. Method (from
-`fe/findings/FE_REPORT.md`, `docs/superpowers/specs/2026-06-17-congestion-impact-score-design.md`):
+`fe/findings/FE_REPORT.md`):
 
 **Step 1 — per-ticket impact intensity.** Each violation is weighted by how much a
 stationary vehicle obstructs moving traffic:
@@ -375,7 +375,7 @@ Or run `gridlock_eda.ipynb` → `gridlock_fe.ipynb` on Kaggle.
 **What the data is.** One anonymised BTP citation log — *an enforcement record, not a
 sensor feed.* It captures where/when officers ticketed, not where/when congestion occurred.
 
-**Verified data facts** (full set in `docs/DATASET.md`): 298,450 raw → **293,070 clean**
+**Verified data facts** (full set in `eda/findings/DATA_DICTIONARY.md`): 298,450 raw → **293,070 clean**
 rows (1.8% exact-ish duplicates removed); window 2023-11-10 → 2024-04-08 IST; 27 offence
 codes; every ticket ≥ Tier-2, **8.76% Tier-3**; **200 of ~7,815 110 m-cells hold 50% of all
 tickets**.
@@ -393,9 +393,9 @@ tickets**.
 4. **`junction_name` is a workflow attribute, not geography** — "No Junction" ≠ "not near a
    junction"; it's used cautiously.
 
-Source documents: `docs/DATASET.md` (data facts), `eda/findings/EDA_REPORT.md` (EDA),
-`fe/findings/FE_REPORT.md` + `fe/findings/MODEL_CARD.md` (scoring & models),
-`docs/DECISIONS.md` (why each choice was made).
+Source documents: `eda/findings/DATA_DICTIONARY.md` (data facts), `eda/findings/EDA_REPORT.md`
+(EDA) + `eda/findings/FINDINGS.md` (evidence log), `fe/findings/FE_REPORT.md` +
+`fe/findings/MODEL_CARD.md` (scoring & models).
 
 ---
 

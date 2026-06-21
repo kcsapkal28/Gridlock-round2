@@ -24,3 +24,13 @@ web/public/data/*
 .assets_cache/
 
 .claude/launch.json
+
+# internal process / docs — kept local, not in the public repo
+docs/
+CLAUDE.md
+.claude/
+kaggle_exec.py
+kaggle_lib.py
+kaggle_pull.py
+build_notebook.py
+build_fe_notebook.py

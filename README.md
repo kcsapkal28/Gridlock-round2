@@ -93,7 +93,7 @@ Full data inventory: [`fe/findings/DATAFLOW_AND_FRONTEND.md`](fe/findings/DATAFL
 | `fe/` | Feature-engineering + scoring pipeline (`cells/`), `scorelib.py`, committed artifacts, model cards |
 | `api/` | FastAPI backend — scoring, patrol optimiser, logistics impedance, MapMyIndia client, tests |
 | `web/` | Vite + React + Deck.gl + MapLibre frontend (dual-persona console) |
-| `docs/` | `DATASET.md`, `DECISIONS.md`, `JOURNAL.md`, `PROGRESS.md`, `CONSTRAINTS.md`, specs & plans |
+| `eda/findings/`, `fe/findings/` | Methodology, data dictionary, severity taxonomy, model cards |
 | `gridlock_eda.ipynb`, `gridlock_fe.ipynb` | Canonical reproducible notebooks (run on Kaggle) |
 | `run_local.py` | Run the EDA/FE cells locally instead of on Kaggle |
 | `mapmyindia_enrich.py`, `rcp.py` | MapMyIndia capacity enrichment & routing-cost-penalty delay loop |
@@ -173,7 +173,7 @@ pytest api/tests -q                      # backend unit tests (scoring, patrol, 
 - **No external datasets.** Every feature is engineered natively from the provided BTP schema.
 - **MapMyIndia = mapping-infrastructure APIs only** (Routing, Distance Matrix, Geocoding /
   reverse-geocoding). Knowledge-enrichment APIs (Places/Nearby, Live Traffic, Weather,
-  Demographics) are **not** used. See [`docs/CONSTRAINTS.md`](docs/CONSTRAINTS.md).
+  Demographics) are **not** used.
 - The impact score is **explainable end to end** — the formula is documented and defensible,
   not a black box.
 
@@ -184,12 +184,11 @@ pytest api/tests -q                      # backend unit tests (scoring, patrol, 
   when BTP enforces, not when congestion happens** (3–9 PM is a systemic data gap), so
   hour-of-day is deliberately excluded as a congestion-timing signal.
 - Enforcement is concentrated (device Gini ≈ 0.79); headline hotspots are device-breadth-robust,
-  but the long tail carries patrol bias. Full caveats: [`docs/DATASET.md`](docs/DATASET.md),
-  [`eda/findings/EDA_REPORT.md`](eda/findings/EDA_REPORT.md).
+  but the long tail carries patrol bias. Full caveats: [`eda/findings/EDA_REPORT.md`](eda/findings/EDA_REPORT.md).
 
 ## Documentation map
-- **Product:** [`PRODUCT.md`](PRODUCT.md) · **Design:** [`DESIGN.md`](DESIGN.md)
-- **Data facts (source of truth):** [`docs/DATASET.md`](docs/DATASET.md)
-- **EDA:** [`eda/findings/EDA_REPORT.md`](eda/findings/EDA_REPORT.md)
+- **Product:** [`PRODUCT.md`](PRODUCT.md) · **Design:** [`DESIGN.md`](DESIGN.md) · **User guide:** [`USER_GUIDE.md`](USER_GUIDE.md)
+- **Data facts & dictionary:** [`eda/findings/DATA_DICTIONARY.md`](eda/findings/DATA_DICTIONARY.md)
+- **EDA:** [`eda/findings/EDA_REPORT.md`](eda/findings/EDA_REPORT.md) · evidence log [`eda/findings/FINDINGS.md`](eda/findings/FINDINGS.md)
 - **Scoring method & validation:** [`fe/findings/FE_REPORT.md`](fe/findings/FE_REPORT.md), [`fe/findings/MODEL_CARD.md`](fe/findings/MODEL_CARD.md)
-- **Decisions & history:** [`docs/DECISIONS.md`](docs/DECISIONS.md), [`docs/JOURNAL.md`](docs/JOURNAL.md)
+- **Dataflow:** [`fe/findings/DATAFLOW_AND_FRONTEND.md`](fe/findings/DATAFLOW_AND_FRONTEND.md)
