@@ -127,6 +127,18 @@ Top-right is a **status bar** (Section 8). The main area is a dark instrument-pa
 (Deck.gl + MapLibre, Carto dark base) with a left **sidebar** whose contents change per
 persona/mode.
 
+### The AI copilot (Claude, embedded)
+Claude is woven into the console — not a separate chatbot:
+- **Command bar** (top, press ⌘K): type a plain-English instruction and the copilot *operates
+  the app* for you — e.g. "plan 3 patrols around HSR", "show only zones above 90", "analyze the
+  Koramangala → Whitefield run". It calls the same endpoints you'd use and the map/sidebar react.
+- **AI enforcement brief** (top of the BTP sidebar): an auto-written priority/deploy/watch brief.
+- **AI read**: select any zone, or analyze a route, and an inline plain-English "why + what to do".
+- **AI insights**: a few proactive, data-derived flags (e.g. high-impact zones a count view misses).
+
+The copilot answers **only from the live data** (grounded — no outside facts), and the AI panels
+quietly disappear if the Claude backend isn't running. See the README for enabling it.
+
 ---
 
 ## 5. BTP Command Console

@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { loadStatic, getHealth, impedanceLoop } from "./api.js";
+import { loadStatic, getHealth, impedanceLoop, aiHealth } from "./api.js";
 import MapView from "./components/MapView.jsx";
 import BTPSidebar from "./components/BTPSidebar.jsx";
 import LogisticsSidebar from "./components/LogisticsSidebar.jsx";
+import CommandBar from "./components/ai/CommandBar.jsx";
+import { applyAiActions } from "./lib/aiActions.js";
 
 const INITIAL = { longitude: 77.59, latitude: 12.97, zoom: 11, pitch: 0, bearing: 0 };
 
@@ -25,6 +27,7 @@ export default function App() {
   const [showAll, setShowAll] = useState(true);
   const [impactMin, setImpactMin] = useState(50);
   const [showStations, setShowStations] = useState(false);
+  const [aiAvail, setAiAvail] = useState(false);
 
   useEffect(() => {
     loadStatic("cells.geojson").then(setCells).catch(() => {});
@@ -33,6 +36,7 @@ export default function App() {
     loadStatic("blindspots.geojson").then(setBlind).catch(() => {});
     loadStatic("stations.json").then(setStations).catch(() => {});
     getHealth().then(setHealth);
+    aiHealth().then((d) => setAiAvail(!!d.available));
   }, []);
 
   const stats = useMemo(() => {
@@ -47,9 +51,12 @@ export default function App() {
     return cells.features.filter((f) => (f.properties.impact || 0) >= impactMin).length;
   }, [cells, showAll, impactMin]);
 
-  function focusPoint(lat, lon) {
-    setViewState((v) => ({ ...v, longitude: lon, latitude: lat, zoom: 14.5, transitionDuration: 600 }));
+  function focusPoint(lat, lon, zoom = 14.5) {
+    setViewState((v) => ({ ...v, longitude: lon, latitude: lat, zoom, transitionDuration: 600 }));
   }
+  const aiApply = (actions) => applyAiActions(actions, {
+    setPersona, setBtpMode, setShowAll, setImpactMin, setShowStations, setSelected, setPlan, setRoute, focusPoint,
+  });
   function focusZone(z) {
     setSelected(z.gh7);
     setViewState((v) => ({ ...v, longitude: z.lon, latitude: z.lat, zoom: 15, transitionDuration: 600 }));
@@ -77,7 +84,7 @@ export default function App() {
           <button className={persona === "btp" ? "on" : ""} onClick={() => setPersona("btp")}>BTP Command</button>
           <button className={persona === "logistics" ? "on" : ""} onClick={() => setPersona("logistics")}>Flipkart Logistics</button>
         </div>
-        <div className="spacer" />
+        <CommandBar available={aiAvail} onActions={aiApply} />
         <div className="health">
           {health ? <span className="live-dot" /> : null}
           API {health ? "ONLINE" : <span style={{ color: "var(--warn)" }}>STATIC-ONLY</span>}
@@ -89,8 +96,8 @@ export default function App() {
         {persona === "btp"
           ? <BTPSidebar btpMode={btpMode} setBtpMode={setBtpMode} stats={stats} tops={tops} rcp={rcp}
               blind={blind} selected={selected} onSelect={focusZone} onFocus={focusPoint}
-              plan={plan} onPlan={setPlan} multi={multi} onPreset={presetSelect} />
-          : <LogisticsSidebar route={route} busy={busy} onAnalyze={analyzeRoute} onFocus={focusPoint} />}
+              plan={plan} onPlan={setPlan} multi={multi} onPreset={presetSelect} aiAvail={aiAvail} />
+          : <LogisticsSidebar route={route} busy={busy} onAnalyze={analyzeRoute} onFocus={focusPoint} aiAvail={aiAvail} />}
         <div className="map-wrap">
           <div className="map-ctrl">
             <div className="mc-title">Impact filter</div>

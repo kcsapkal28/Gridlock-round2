@@ -16,5 +16,8 @@ pygeohash==1.2.0         # geohash-7 lookup
 scikit-learn==1.5.2
 lightgbm==4.5.0          # loads fe_work/fe_out/model_impact.txt (LightGBM booster)
 
+# --- AI copilot (Claude via local claude-openai proxy, Anthropic-native passthrough) ---
+anthropic==0.111.0
+
 # --- tests ---
 pytest==9.1.0

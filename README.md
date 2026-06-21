@@ -63,6 +63,20 @@ LightGBM **impact regressor** and **hotspot detector**, validated with spatial G
 (grouped by gh5 so nearby cells don't leak across folds). Serve fresh `lat/lon` points via
 the API. Model details: [`fe/findings/MODEL_CARD.md`](fe/findings/MODEL_CARD.md).
 
+### 5. AI Copilot (Claude, tightly integrated)
+Claude is woven into the console as a reasoning layer — not a chat bubble:
+- **Command bar (⌘K):** natural-language operator that *drives the app* via tool-use —
+  "plan 3 patrols around HSR", "show only zones above 90", "analyze the Whitefield run".
+  The model calls our own endpoints and the map/sidebar react.
+- **AI enforcement brief:** auto-generated, grounded priority/deploy/watch brief.
+- **Explain & recommend:** an inline "AI read" on any selected zone or analyzed route.
+- **Insights:** proactive, data-derived flags (e.g. under-counted high-impact zones).
+
+It is **grounded** (answers only from our tool results — no external data, competition-safe),
+runs the agentic loop **server-side** with large artifacts kept out of model context, and
+**degrades to "offline"** if the LLM backend isn't running. Runs through a local Claude proxy
+(see setup); the API path is `/api/v1/ai/*`.
+
 ---
 
 ## Architecture
@@ -149,14 +163,24 @@ npm install
 npm run dev                              # http://localhost:5173  (proxies /api → :8011)
 ```
 
-### 4. Tests
+### 4. AI Copilot (optional)
+The copilot calls Claude through a local OpenAI/Anthropic proxy. Without it the app runs
+normally and the AI surfaces show "offline".
 ```bash
-pytest api/tests -q                      # backend unit tests (scoring, patrol, logistics, mappls, …)
+# in the claude-openai proxy repo (Claude CLI must be logged in):
+bash start.sh -p 4000                    # exposes :4001 Anthropic-native passthrough
+```
+Backend config (env, defaults in `api/config.py`): `AI_BASE_URL=http://localhost:4001`,
+`AI_MODEL=claude-sonnet-4-6`, `AI_ENABLED=1`. The grounded agentic loop runs server-side.
+
+### 5. Tests
+```bash
+pytest api/tests -q                      # 38 tests: scoring, patrol, logistics, mappls, AI tools + loop
 ```
 
 ---
 
-## API endpoints (`api/main.py`)
+## API endpoints (`api/main.py`, `api/ai/`)
 | Method | Path | Purpose |
 |--------|------|---------|
 | GET  | `/api/v1/health` | Service + model + MapMyIndia status |
@@ -166,6 +190,11 @@ pytest api/tests -q                      # backend unit tests (scoring, patrol, 
 | GET  | `/api/v1/triage/patrol-plan` | Optimised multi-unit patrol plan (`units`, `topk`) |
 | POST | `/api/v1/logistics/impedance-loop` | Route choke-point detection + SLA-delay + reroute |
 | GET  | `/api/v1/mappls/revgeocode` | Reverse geocode (MapMyIndia passthrough, cached) |
+| GET  | `/api/v1/ai/health` | Copilot availability |
+| POST | `/api/v1/ai/command` | NL operator — agentic, returns `{reply, ui_actions}` |
+| GET  | `/api/v1/ai/brief` | Auto enforcement brief |
+| POST | `/api/v1/ai/explain` | "AI read" for a zone (`{gh7}`) or route (`{route_summary}`) |
+| GET  | `/api/v1/ai/insights` | Proactive data-derived insights |
 
 ---
 

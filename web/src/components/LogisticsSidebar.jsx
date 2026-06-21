@@ -1,5 +1,6 @@
 import React from "react";
 import { slaColor } from "../lib/color.js";
+import AiRead from "./ai/AiRead.jsx";
 
 // Sample delivery routes across Bengaluru that cross known hotspot corridors.
 const PRESETS = [
@@ -8,7 +9,7 @@ const PRESETS = [
   { name: "Electronic City → KR Puram", wp: [{ lat: 12.842, lng: 77.660 }, { lat: 13.008, lng: 77.696 }] },
 ];
 
-export default function LogisticsSidebar({ route, busy, onAnalyze, onFocus }) {
+export default function LogisticsSidebar({ route, busy, onAnalyze, onFocus, aiAvail }) {
   return (
     <div className="sidebar">
       <div className="banner">
@@ -51,6 +52,11 @@ export default function LogisticsSidebar({ route, busy, onAnalyze, onFocus }) {
             <span style={{ color: "#5dcaa5" }}> ●</span> pickup ·
             <span style={{ color: "#78a2ff" }}> ●</span> drop
           </div>
+
+          <AiRead available={aiAvail} routeSummary={{
+            total_delay_min: route.impedance_delay_mins, sla_risk: route.sla_risk,
+            recoverable_min: route.minutes_saved_by_detour, n_chokes: route.n_affected,
+            worst_gh7: route.worst_choke && route.worst_choke.gh7 }} />
 
           <div className="section-title">Choke points on this route</div>
           {(route.affected_cells || []).length > 0 && <div className="muted" style={{ marginBottom: 6, fontSize: 11 }}>Tap a choke point to locate it on the map.</div>}
