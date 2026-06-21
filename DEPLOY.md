@@ -1,68 +1,152 @@
-# Deploying GridLock to Render (UI guide)
+# GridLock — Render Deployment Guide
 
-Two services: **`gridlock-api`** (FastAPI backend) and **`gridlock-web`** (static Vite frontend).
-A `render.yaml` Blueprint is included, so the one-click Blueprint flow (Path A) is easiest.
-
-> Render deploys from a Git host. **First push this repo to GitHub** (it has no remote yet):
-> ```
-> git remote add origin https://github.com/<you>/gridlock.git
-> git push -u origin main
-> ```
-> The committed `srv_data/` (model + scores) and `web/public/data/` (map bundle) ship with the repo.
+A complete, detailed walkthrough for deploying GridLock to **Render** from
+`https://github.com/kcsapkal28/Gridlock-round2`.
 
 ---
 
-## Path A — Blueprint (recommended, ~2 clicks)
+## 1. Architecture (what gets deployed)
 
-1. Render Dashboard → **New +** (top right) → **Blueprint**.
-2. **Connect** your GitHub account if prompted, then pick the **gridlock** repo. Render reads `render.yaml`.
-3. Render shows two services to create (`gridlock-api`, `gridlock-web`). Click **Apply**.
-4. Wait for **gridlock-api** to go **Live** (first build ~3–5 min; installs pandas/lightgbm). Open its URL +
-   `/api/v1/health` → should return `{"status":"ok", ...}`. Copy the service URL (e.g.
-   `https://gridlock-api.onrender.com`).
-5. If that URL differs from what's in `render.yaml`: open **gridlock-web → Environment**, set
-   **`VITE_API_BASE`** to the exact API URL, **Save**, then **Manual Deploy → Deploy latest commit**
-   (the frontend bakes this URL at build time).
-6. Open the **gridlock-web** URL → the dashboard loads. Done.
+Two independent services, both free-tier-capable:
+
+```mermaid
+flowchart LR
+  U[Browser] --> W["gridlock-web<br/>(Render Static Site)<br/>Vite/React/Deck.gl"]
+  W -->|"/data/*.geojson (bundled)"| W
+  W -->|"VITE_API_BASE → /api/v1/*"| A["gridlock-api<br/>(Render Web Service)<br/>FastAPI + Uvicorn"]
+  A -->|"reads at startup"| D[("srv_data/<br/>cell_scores.parquet<br/>model_impact.txt<br/>rcp.csv")]
+  A -.->|"optional, mapping-infra only"| M["MapMyIndia<br/>Distance Matrix · Routing"]
+```
+
+- **gridlock-web** — static build. Serves the UI + the precomputed map bundle (`web/public/data/*`,
+  copied into `dist/data` at build). Calls the API for live scoring / patrol plans / impedance.
+- **gridlock-api** — FastAPI. Loads the model + scores from the committed `srv_data/` at startup. Calls
+  MapMyIndia only if `MAPPLS_KEY` is set (else falls back to estimates). No database needed.
+
+Everything the deploy needs is **already committed** (model, scores, map bundle, `render.yaml`).
 
 ---
 
-## Path B — Manual (two services, no Blueprint)
+## 2. Prerequisites
 
-**Backend (`gridlock-api`):**
-1. **New + → Web Service** → connect the repo.
-2. Settings: **Runtime** Python · **Region** Singapore · **Branch** main · **Plan** Free.
-3. **Build command:** `pip install -r requirements-api.txt`
-4. **Start command:** `uvicorn api.main:app --host 0.0.0.0 --port $PORT`
-5. **Health check path:** `/api/v1/health`
-6. **Environment** → add:
-   - `PYTHON_VERSION = 3.12.6`
-   - `SCORES_PARQUET = srv_data/cell_scores.parquet`
-   - `IMPACT_MODEL = srv_data/model_impact.txt`
-   - `RCP_CSV = srv_data/rcp.csv`
-   - `CORS_ORIGINS = *`
-   - `AI_ENABLED = 0`
-   - *(optional)* `MAPPLS_KEY = <your Mappls REST key>` — enables real drive-times/detours;
-     without it, patrol times and detours fall back to estimates.
-7. **Create Web Service**. When Live, verify `…/api/v1/health`. Copy the URL.
+- A **Render account** (free): https://render.com → sign up / log in (GitHub login is easiest).
+- The repo is on GitHub and current (verified synced). Render will connect to it directly.
+- Nothing to install locally.
 
-**Frontend (`gridlock-web`):**
+---
+
+## 3. Path A — Blueprint (recommended, provisions both services at once)
+
+Render reads the committed `render.yaml` and creates both services.
+
+1. **Dashboard → New + (top-right) → Blueprint.**
+2. **Connect GitHub** (authorize Render if first time) → in the repo list choose **`Gridlock-round2`**.
+3. Render parses `render.yaml` and previews **two services**: `gridlock-api` and `gridlock-web`.
+   Give the Blueprint a name (e.g. `gridlock`) → **Apply** / **Create Services**.
+4. **Watch `gridlock-api` build.** First build is ~3–5 min (installs pandas/lightgbm/scikit-learn).
+   When it shows **Live**, click it and open `https://<api-host>/api/v1/health` →
+   you should see `{"status":"ok","model_loaded":true,...}`. **Copy the exact API URL.**
+5. **Point the frontend at the API.** The Blueprint pre-sets `VITE_API_BASE=https://gridlock-api.onrender.com`.
+   If your actual API host differs (Render adds a random suffix if the name is taken):
+   - Open **`gridlock-web` → Environment** → edit **`VITE_API_BASE`** to the exact URL from step 4 → **Save changes**.
+   - **Manual Deploy → Deploy latest commit** (the URL is baked in at build time, so a rebuild is required).
+6. Open the **`gridlock-web`** URL → the dashboard loads. ✅
+
+---
+
+## 4. Path B — Manual (create the two services yourself)
+
+Use this if you prefer not to use the Blueprint.
+
+### 4a. Backend — `gridlock-api`
+1. **New + → Web Service** → connect repo `Gridlock-round2`.
+2. Configure:
+   - **Name:** `gridlock-api`
+   - **Region:** Singapore (closest to Bengaluru)
+   - **Branch:** `main`
+   - **Runtime/Language:** Python 3
+   - **Build Command:** `pip install -r requirements-api.txt`
+   - **Start Command:** `uvicorn api.main:app --host 0.0.0.0 --port $PORT`
+   - **Instance Type:** Free
+3. **Advanced → Health Check Path:** `/api/v1/health`
+4. **Advanced → Environment Variables** (Add for each):
+
+   | Key | Value |
+   |-----|-------|
+   | `PYTHON_VERSION` | `3.12.6` |
+   | `SCORES_PARQUET` | `srv_data/cell_scores.parquet` |
+   | `IMPACT_MODEL` | `srv_data/model_impact.txt` |
+   | `RCP_CSV` | `srv_data/rcp.csv` |
+   | `CORS_ORIGINS` | `*` |
+   | `AI_ENABLED` | `0` |
+   | `MAPPLS_KEY` *(optional)* | your Mappls REST key |
+
+5. **Create Web Service.** When Live, verify `…/api/v1/health`. Copy the URL.
+
+### 4b. Frontend — `gridlock-web`
 1. **New + → Static Site** → same repo.
-2. **Root directory:** `web`
-3. **Build command:** `npm install && npm run build`
-4. **Publish directory:** `dist`  (i.e. `web/dist`)
-5. **Environment** → `VITE_API_BASE = https://gridlock-api.onrender.com` (the backend URL from above).
-6. *(SPA fallback)* **Redirects/Rewrites** → add: Source `/*` → Destination `/index.html` → **Rewrite**.
-7. **Create Static Site**. Open its URL.
+2. Configure:
+   - **Name:** `gridlock-web`
+   - **Branch:** `main`
+   - **Root Directory:** `web`
+   - **Build Command:** `npm install && npm run build`
+   - **Publish Directory:** `dist`
+3. **Environment Variables:** `VITE_API_BASE = <the gridlock-api URL>`
+4. **Redirects/Rewrites** (for SPA routing): Source `/*` → Destination `/index.html` → Action **Rewrite**.
+5. **Create Static Site.** Open its URL.
 
 ---
 
-## Notes
-- **Free tier cold start:** the API sleeps after ~15 min idle; the first request then takes ~50 s while it
-  wakes. The frontend still loads instantly (static bundle); live scoring/patrol just waits on that first call.
-- **MapMyIndia key (optional):** set `MAPPLS_KEY` on the backend for real Distance-Matrix/Routing. Compliant
-  (mapping-infra only, ADR-007). Omit it and the app runs with haversine/straight-line fallbacks.
-- **AI copilot:** stays off in cloud (`AI_ENABLED=0`) — it needs the local Claude proxy. The UI hides AI
-  surfaces automatically when unavailable.
-- **CORS:** `*` is set for a public demo. To lock down, set `CORS_ORIGINS` to the exact frontend URL.
-- **Updating data:** regenerate `srv_data/*` + `web/public/data/*`, commit, push → Render auto-redeploys.
+## 5. Environment variable reference
+
+| Variable | Service | Default (code) | Purpose |
+|----------|---------|----------------|---------|
+| `PYTHON_VERSION` | api | — | Pin to 3.12.6 for wheel compatibility |
+| `SCORES_PARQUET` | api | `fe_work/...` | Path to committed per-zone scores |
+| `IMPACT_MODEL` | api | `fe_work/...` | Path to committed LightGBM booster |
+| `RCP_CSV` | api | `fe_work/...` | Path to committed RCP delays |
+| `CORS_ORIGINS` | api | `localhost...` | Allowed browser origins (`*` for public demo) |
+| `AI_ENABLED` | api | `1` | `0` in cloud — AI copilot needs a local proxy |
+| `MAPPLS_KEY` | api | (from file) | Optional; enables real Distance-Matrix/Routing |
+| `VITE_API_BASE` | web | `""` | Backend URL, baked into the build |
+
+---
+
+## 6. Post-deploy verification checklist
+
+- [ ] `GET https://<api>/api/v1/health` → `{"status":"ok","model_loaded":true}`
+- [ ] `GET https://<api>/api/v1/triage/hotspots?min_impact=90` → a GeoJSON FeatureCollection
+- [ ] `https://<api>/docs` → Swagger UI lists all endpoints
+- [ ] Frontend loads, map renders the colored zones (BTP Command)
+- [ ] Toggle **Patrol Plan → Generate** → routes appear (live if `MAPPLS_KEY` set, else "est.")
+- [ ] Toggle **Flipkart Logistics → a route** → delay + detour render
+
+---
+
+## 7. Troubleshooting
+
+| Symptom | Cause / fix |
+|---------|-------------|
+| First request hangs ~50 s | Free-tier **cold start** — the API slept after 15 min idle. Normal; upgrade the instance to avoid. |
+| Map loads but stats/patrol fail; console shows `/api` 404 or CORS error | `VITE_API_BASE` wrong or not rebuilt → set the exact API URL on `gridlock-web`, then **Deploy latest commit**. Ensure `CORS_ORIGINS=*` (or the frontend URL) on the API. |
+| API build fails on `lightgbm`/`pyarrow` | Confirm `PYTHON_VERSION=3.12.6`; these have cp312 Linux wheels. |
+| API boots but `model_loaded:false` / 500s | `SCORES_PARQUET` / `IMPACT_MODEL` env paths must match the committed `srv_data/` files. |
+| Patrol times say "est." | No `MAPPLS_KEY` set → using haversine fallback. Add the key to enable real routing. |
+| Blank map tiles | Carto base tiles are public/no-key; check the browser can reach `basemaps.cartocdn.com`. |
+
+---
+
+## 8. Cost & limits
+
+- Both services run on Render **Free**. The static site is always-on; the API **sleeps when idle**
+  (cold start on next hit). For a smooth demo, hit `/api/v1/health` a minute before presenting, or
+  upgrade `gridlock-api` to a paid instance (always-on).
+- MapMyIndia stays on the **free developer tier**; the backend caches Distance-Matrix/Routing responses,
+  so repeated demo runs consume ~no quota.
+
+---
+
+## 9. Updating after deploy
+
+Push to `main` → Render auto-redeploys both services. To refresh the data/model, regenerate
+`srv_data/*` and `web/public/data/*`, commit, and push.
