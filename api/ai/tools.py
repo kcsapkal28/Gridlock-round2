@@ -3,17 +3,7 @@
 - ui_actions:    list of {type, ...} applied by the frontend (full plan/route w/ geometry rides here).
 """
 from api.geo import haversine_km
-
-# --- a tiny, native gazetteer so "around HSR" resolves to coordinates (mapping-infra style) ---
-AREAS = {
-    "koramangala": (12.935, 77.622), "hsr": (12.911, 77.647), "hsr layout": (12.911, 77.647),
-    "whitefield": (12.970, 77.750), "indiranagar": (12.971, 77.641), "marathahalli": (12.956, 77.701),
-    "electronic city": (12.842, 77.660), "hebbal": (13.035, 77.597), "city market": (12.964, 77.578),
-    "majestic": (12.977, 77.572), "jayanagar": (12.930, 77.583), "mg road": (12.975, 77.606),
-    "kr puram": (13.008, 77.696), "k.r. pura": (13.008, 77.696), "bellandur": (12.926, 77.676),
-    "banashankari": (12.925, 77.546), "yeshwanthpur": (13.028, 77.550), "malleshwaram": (13.003, 77.569),
-    "btm": (12.916, 77.610), "sarjapur": (12.905, 77.700), "silk board": (12.917, 77.622),
-}
+from api.places import build_gazetteer, resolve as resolve_place
 
 
 def _rows(df, n):
@@ -31,20 +21,18 @@ class ToolExecutor:
         self.mappls = mappls
         self.rcp = rcp_lookup
         self.blind = blindspots or []
-        self.gaz = dict(AREAS)
-        for s in (stations or []):
-            if isinstance(s, dict) and s.get("name"):
-                self.gaz.setdefault(s["name"].lower(), (s["lat"], s["lon"]))
+        self.stations = stations or []
+        self.gaz = build_gazetteer(stations)
 
-    # ---- geocode ----
+    # ---- geocode (forgiving: typos / abbreviations / partial names all resolve) ----
     def geocode(self, inp):
-        q = (inp.get("place") or "").strip().lower()
+        q = (inp.get("place") or "").strip()
         if not q:
             return {"error": "no place given"}, []
-        for k, (la, lo) in self.gaz.items():
-            if k in q or q in k:
-                return {"matched_name": k, "lat": la, "lon": lo}, []
-        return {"error": f"'{inp.get('place')}' not recognised; ask the user to pick a known area"}, []
+        res = resolve_place(q, self.gaz)
+        if "error" in res:
+            return {"error": res["error"], "did_you_mean": res.get("candidates", [])[:3]}, []
+        return {"matched_name": res["name"], "lat": res["lat"], "lon": res["lon"]}, []
 
     def _near_filter(self, df, near):
         if not near:
@@ -89,7 +77,7 @@ class ToolExecutor:
             df = self._near_filter(df[df["ranked"]], near)
             if len(df) < units:
                 df = self.svc.df  # not enough local zones; fall back to citywide
-        plan = build_plan(df, self.mappls, units=units, topk=topk)
+        plan = build_plan(df, self.mappls, units=units, topk=topk, stations=self.stations)
         summary = {"units": len(plan["units"]),
                    "drive_mins": [u["drive_time_min"] for u in plan["units"]],
                    "zones_per_unit": [u["n_zones"] for u in plan["units"]],

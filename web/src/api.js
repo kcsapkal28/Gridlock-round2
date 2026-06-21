@@ -11,10 +11,25 @@ export async function getHealth() {
   try { const r = await fetch(`${API}/api/v1/health`); return r.ok ? r.json() : null; }
   catch { return null; }
 }
-export async function patrolPlan(units, topk) {
-  const r = await fetch(`${API}/api/v1/triage/patrol-plan?units=${units}&topk=${topk}`);
+export async function patrolPlan(units, topk, priority = "impact", startFromStation = true) {
+  const r = await fetch(`${API}/api/v1/triage/patrol-plan?units=${units}&topk=${topk}`
+    + `&priority=${priority}&start_from_station=${startFromStation}`);
   if (!r.ok) throw new Error(`patrol ${r.status}`);
   return r.json();
+}
+// Forgiving area-name geocoder (typos / abbreviations OK). Returns {name,lat,lon,...} or {error}.
+export async function geocodePlace(q) {
+  const r = await fetch(`${API}/api/v1/geocode?q=${encodeURIComponent(q)}`);
+  if (!r.ok) throw new Error(`geocode ${r.status}`);
+  return r.json();
+}
+// Analyse a delivery route from two free-typed names — no AI proxy required.
+export async function routeByName(origin, dest, minImpact = 80) {
+  const r = await fetch(`${API}/api/v1/logistics/route-by-name?origin=${encodeURIComponent(origin)}`
+    + `&dest=${encodeURIComponent(dest)}&min_impact=${minImpact}`);
+  const j = await r.json().catch(() => null);
+  if (!r.ok) throw new Error((j && j.error && j.error.message) || `route ${r.status}`);
+  return j;
 }
 export async function impedanceLoop(waypoints, min_impact = 80) {
   const r = await fetch(`${API}/api/v1/logistics/impedance-loop`, {

@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 
 export default function BlindSpotsPanel({ blind, onSelect }) {
   const fs = blind?.features || [];
+  const [limit, setLimit] = useState(5);
+  const shown = fs.slice(0, limit);
   return (
     <div>
       <div className="banner">
@@ -10,8 +12,8 @@ export default function BlindSpotsPanel({ blind, onSelect }) {
         heavy-vehicle share and risky road context — but with <b>low current enforcement</b>. These are
         high-impact spots that a ticket-volume view never surfaces.</span>
       </div>
-      <div className="section-title">{fs.length} candidate zones</div>
-      {fs.slice(0, 40).map((f) => {
+      <div className="section-title">{fs.length} candidate zones · showing {Math.min(limit, fs.length)}</div>
+      {shown.map((f) => {
         const p = f.properties;
         return (
           <div key={p.gh7} className="card"
@@ -27,6 +29,12 @@ export default function BlindSpotsPanel({ blind, onSelect }) {
         );
       })}
       {!fs.length && <div className="muted">No blind-spot data loaded.</div>}
+      {fs.length > 5 && (
+        <button className="btn more" style={{ marginTop: 4 }}
+          onClick={() => setLimit((l) => (l >= fs.length ? 5 : l + 10))}>
+          {limit >= fs.length ? "Show top 5 only" : `Show more (${fs.length - limit} left)`}
+        </button>
+      )}
     </div>
   );
 }

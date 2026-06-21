@@ -72,7 +72,22 @@ export default function MapView(props) {
       id: "patrol-routes", data: plan.units, getPath: (u) => u.route_geometry,
       getColor: (u) => [...hexRgb(u.color), 235], getWidth: 5, widthUnits: "pixels", capRounded: true, jointRounded: true,
     }));
-    const stops = plan.units.flatMap((u) => u.stops.map((s, i) => ({ ...s, color: u.color, seq: i + 1 })));
+    // Depots (police stations each unit rolls out from)
+    const depots = plan.units.map((u) => u.station && { ...u.station, color: u.color }).filter(Boolean);
+    if (depots.length) {
+      layers.push(new ScatterplotLayer({
+        id: "patrol-depots", data: depots, pickable: true, getPosition: (d) => [d.lon, d.lat],
+        getRadius: 150, radiusMinPixels: 8, getFillColor: [10, 14, 22, 235],
+        getLineColor: (d) => hexRgb(d.color), lineWidthMinPixels: 3, stroked: true,
+      }));
+      layers.push(new TextLayer({
+        id: "patrol-depot-labels", data: depots, getPosition: (d) => [d.lon, d.lat],
+        getText: (d) => `▲ ${d.name}`, getSize: 10, getColor: [173, 196, 255, 235],
+        getPixelOffset: [0, -15], getTextAnchor: "middle", fontWeight: 600,
+        outlineWidth: 2, outlineColor: [8, 11, 18, 255], fontSettings: { sdf: true },
+      }));
+    }
+    const stops = plan.units.flatMap((u) => u.stops.map((s, i) => ({ ...s, color: u.color, seq: s.seq ?? i + 1 })));
     layers.push(new ScatterplotLayer({
       id: "patrol-stops", data: stops, pickable: true, getPosition: (d) => [d.lon, d.lat],
       getRadius: 130, radiusMinPixels: 9, getFillColor: (d) => hexRgb(d.color),

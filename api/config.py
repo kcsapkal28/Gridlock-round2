@@ -5,6 +5,7 @@ class Settings:
     FE_OUT = os.environ.get("FE_OUT", "fe_work/fe_out")
     RCP_CSV = os.environ.get("RCP_CSV", "fe_work/fe_out/rcp.csv")
     STATIC_OUT = os.environ.get("STATIC_OUT", "web/public/data")
+    STATIONS_JSON = os.environ.get("STATIONS_JSON", "web/public/data/stations.json")
     CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",")
     MAPPLS_SECRETS = os.environ.get("MAPPLS_SECRETS", ".mappls_secrets")
     MAPPLS_CACHE = os.environ.get("MAPPLS_CACHE", ".mappls_cache")

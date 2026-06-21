@@ -46,7 +46,8 @@ Render reads the committed `render.yaml` and creates both services.
 4. **Watch `gridlock-api` build.** First build is ~3–5 min (installs pandas/lightgbm/scikit-learn).
    When it shows **Live**, click it and open `https://<api-host>/api/v1/health` →
    you should see `{"status":"ok","model_loaded":true,...}`. **Copy the exact API URL.**
-5. **Point the frontend at the API.** The Blueprint pre-sets `VITE_API_BASE=https://gridlock-api.onrender.com`.
+5. **Point the frontend at the API.** The Blueprint pre-sets
+   `VITE_API_BASE=https://gridlock-api-mook.onrender.com` (the live API).
    If your actual API host differs (Render adds a random suffix if the name is taken):
    - Open **`gridlock-web` → Environment** → edit **`VITE_API_BASE`** to the exact URL from step 4 → **Save changes**.
    - **Manual Deploy → Deploy latest commit** (the URL is baked in at build time, so a rebuild is required).
@@ -65,7 +66,8 @@ Use this if you prefer not to use the Blueprint.
    - **Region:** Singapore (closest to Bengaluru)
    - **Branch:** `main`
    - **Runtime/Language:** Python 3
-   - **Build Command:** `pip install -r requirements-api.txt`
+   - **Build Command:** `pip install -r requirements-api.txt -r requirements-ai.txt`
+     *(requirements.txt — the EDA/feature pipeline — is NOT needed in the cloud.)*
    - **Start Command:** `uvicorn api.main:app --host 0.0.0.0 --port $PORT`
    - **Instance Type:** Free
 3. **Advanced → Health Check Path:** `/api/v1/health`
@@ -78,8 +80,15 @@ Use this if you prefer not to use the Blueprint.
    | `IMPACT_MODEL` | `srv_data/model_impact.txt` |
    | `RCP_CSV` | `srv_data/rcp.csv` |
    | `CORS_ORIGINS` | `*` |
-   | `AI_ENABLED` | `0` |
-   | `MAPPLS_KEY` *(optional)* | your Mappls REST key |
+   | `MAPPLS_KEY` *(optional)* | your Mappls REST key — enables live routing |
+   | `AI_ENABLED` | `1` |
+   | `AI_BASE_URL` | `https://api.anthropic.com` |
+   | `AI_MODEL` | `claude-sonnet-4-6` |
+   | `AI_API_KEY` *(optional)* | a **real Anthropic API key** to enable the copilot in the cloud |
+
+   > **AI in the cloud:** the local Claude proxy isn't reachable from Render, so the copilot
+   > needs a real Anthropic API key (`AI_API_KEY`). Without it, the AI surfaces show "offline"
+   > and everything else works normally.
 
 5. **Create Web Service.** When Live, verify `…/api/v1/health`. Copy the URL.
 
@@ -106,7 +115,9 @@ Use this if you prefer not to use the Blueprint.
 | `IMPACT_MODEL` | api | `fe_work/...` | Path to committed LightGBM booster |
 | `RCP_CSV` | api | `fe_work/...` | Path to committed RCP delays |
 | `CORS_ORIGINS` | api | `localhost...` | Allowed browser origins (`*` for public demo) |
-| `AI_ENABLED` | api | `1` | `0` in cloud — AI copilot needs a local proxy |
+| `AI_ENABLED` | api | `1` | Copilot on; needs `AI_API_KEY` (real Anthropic key) in cloud, else "offline" |
+| `AI_BASE_URL` | api | `localhost:4001` | `https://api.anthropic.com` in cloud (no local proxy) |
+| `AI_API_KEY` | api | (proxy default) | Real Anthropic API key to enable the cloud copilot |
 | `MAPPLS_KEY` | api | (from file) | Optional; enables real Distance-Matrix/Routing |
 | `VITE_API_BASE` | web | `""` | Backend URL, baked into the build |
 

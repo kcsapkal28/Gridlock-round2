@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { loadStatic, getHealth, impedanceLoop, aiHealth } from "./api.js";
+import { loadStatic, getHealth, impedanceLoop, routeByName, aiHealth } from "./api.js";
 import MapView from "./components/MapView.jsx";
 import BTPSidebar from "./components/BTPSidebar.jsx";
 import LogisticsSidebar from "./components/LogisticsSidebar.jsx";
@@ -23,6 +23,7 @@ export default function App() {
   const [multi, setMulti] = useState([]); // gh7[] for What-If
   const [busy, setBusy] = useState(false);
   const [viewState, setViewState] = useState(INITIAL);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   // map controls
   const [showAll, setShowAll] = useState(true);
   const [impactMin, setImpactMin] = useState(50);
@@ -66,6 +67,11 @@ export default function App() {
     setMulti((m) => (m.includes(gh7) ? m.filter((x) => x !== gh7) : [...m, gh7]));
   }
 
+  function recenterRoute(r) {
+    if (r?.origin && r?.dest)
+      setViewState((v) => ({ ...v, longitude: (r.origin.lng + r.dest.lng) / 2,
+        latitude: (r.origin.lat + r.dest.lat) / 2, zoom: 11.5, transitionDuration: 700 }));
+  }
   async function analyzeRoute(waypoints) {
     setBusy(true);
     const a = waypoints[0], b = waypoints[waypoints.length - 1];
@@ -73,6 +79,13 @@ export default function App() {
       zoom: 11.5, transitionDuration: 700 }));
     try { setRoute(await impedanceLoop(waypoints, 80)); }
     catch { setRoute(null); }
+    finally { setBusy(false); }
+  }
+  // Name-based route analysis (fuzzy geocoder) — works without the AI proxy. Throws on
+  // unresolved names so the sidebar can surface the message.
+  async function analyzeByName(origin, dest) {
+    setBusy(true);
+    try { const r = await routeByName(origin, dest, 80); setRoute(r); recenterRoute(r); return r; }
     finally { setBusy(false); }
   }
 
@@ -92,12 +105,17 @@ export default function App() {
         </div>
       </div>
 
-      <div className="body">
+      <div className={"body" + (sidebarOpen ? "" : " collapsed")}>
         {persona === "btp"
           ? <BTPSidebar btpMode={btpMode} setBtpMode={setBtpMode} stats={stats} tops={tops} rcp={rcp}
               blind={blind} selected={selected} onSelect={focusZone} onFocus={focusPoint}
               plan={plan} onPlan={setPlan} multi={multi} onPreset={presetSelect} aiAvail={aiAvail} />
-          : <LogisticsSidebar route={route} busy={busy} onAnalyze={analyzeRoute} onFocus={focusPoint} aiAvail={aiAvail} onAiActions={aiApply} />}
+          : <LogisticsSidebar route={route} busy={busy} onAnalyze={analyzeRoute} onAnalyzeByName={analyzeByName}
+              onFocus={focusPoint} aiAvail={aiAvail} onAiActions={aiApply} />}
+        <button className="sidebar-toggle" onClick={() => setSidebarOpen((v) => !v)}
+          title={sidebarOpen ? "Hide panel" : "Show panel"} aria-label="Toggle sidebar">
+          {sidebarOpen ? "‹" : "›"}
+        </button>
         <div className="map-wrap">
           <div className="map-ctrl">
             <div className="mc-title">Impact filter</div>

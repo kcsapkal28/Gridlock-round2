@@ -9,7 +9,14 @@ from api.mappls import MapplsClient
 from api.schemas import ImpedanceRequest
 from api.logistics import impedance, load_rcp
 from api.patrol import build_plan
+from api.places import build_gazetteer, resolve as resolve_place
 import json as _json
+
+def _load_json(path, default):
+    try:
+        return _json.load(open(path))
+    except Exception:
+        return default
 
 def _key(path):
     env = __import__("os").environ.get("MAPPLS_KEY")   # prefer env (Render secret) over the file
@@ -36,6 +43,8 @@ def create_app(scores_parquet=None):
     mappls=MapplsClient(settings.MAPPLS_CACHE, _key(settings.MAPPLS_SECRETS),
                         breaker_fails=settings.BREAKER_FAILS, cooldown=settings.BREAKER_COOLDOWN)
     rcp_lookup=load_rcp(settings.RCP_CSV)
+    stations=_load_json(settings.STATIONS_JSON, [])
+    gazetteer=build_gazetteer(stations)
 
     @app.middleware("http")
     async def reqid(request: Request, call_next):
@@ -80,13 +89,34 @@ def create_app(scores_parquet=None):
         return {"type":"FeatureCollection","features":feats}
 
     @app.get("/api/v1/triage/patrol-plan")
-    def patrol_plan(units: int = 3, topk: int = 15):
-        return build_plan(svc.df, mappls, units=units, topk=topk)
+    def patrol_plan(units: int = 3, topk: int = 15, priority: str = "impact",
+                    start_from_station: bool = True):
+        return build_plan(svc.df, mappls, units=units, topk=topk, priority=priority,
+                          start_from_station=start_from_station, stations=stations)
+
+    @app.get("/api/v1/geocode")
+    def geocode(q: str):
+        """Forgiving area-name → coordinate resolver (typos / abbreviations / partials OK)."""
+        return resolve_place(q, gazetteer)
 
     @app.post("/api/v1/logistics/impedance-loop")
     def impedance_loop(req: ImpedanceRequest):
         wps=[{"lat":w.lat,"lng":w.lng} for w in req.waypoints]
         return impedance(wps, svc.df, rcp_lookup, mappls, min_impact=req.min_impact)
+
+    @app.get("/api/v1/logistics/route-by-name")
+    def route_by_name(origin: str, dest: str, min_impact: float = 80.0, request: Request = None):
+        """Resolve two free-typed area names, then analyse the route between them.
+        Works without the AI proxy — the fuzzy gazetteer handles spelling slips."""
+        o=resolve_place(origin, gazetteer); d=resolve_place(dest, gazetteer)
+        if "error" in o:
+            return err(422,"geocode_failed",f"origin: {o['error']}", getattr(request.state,"rid",""))
+        if "error" in d:
+            return err(422,"geocode_failed",f"dest: {d['error']}", getattr(request.state,"rid",""))
+        wps=[{"lat":o["lat"],"lng":o["lon"]},{"lat":d["lat"],"lng":d["lon"]}]
+        res=impedance(wps, svc.df, rcp_lookup, mappls, min_impact=min_impact)
+        res["origin_name"]=o["name"]; res["dest_name"]=d["name"]
+        return res
 
     # AI copilot (Claude via local proxy). Isolated router; degrades to "offline" if unreachable.
     try:

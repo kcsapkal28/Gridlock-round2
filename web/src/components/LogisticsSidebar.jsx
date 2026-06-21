@@ -15,10 +15,25 @@ const PRESETS = [
   { name: "Silk Board → Hebbal", wp: [{ lat: 12.917, lng: 77.622 }, { lat: 13.035, lng: 77.597 }] },
 ];
 
-export default function LogisticsSidebar({ route, busy, onAnalyze, onFocus, aiAvail, onAiActions }) {
+export default function LogisticsSidebar({ route, busy, onAnalyze, onAnalyzeByName, onFocus, aiAvail, onAiActions }) {
   const [q, setQ] = useState("");
   const [aiBusy, setAiBusy] = useState(false);
   const [aiErr, setAiErr] = useState("");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [nameErr, setNameErr] = useState("");
+
+  async function runNamed(e) {
+    e.preventDefault();
+    if (!from.trim() || !to.trim() || busy) return;
+    setNameErr("");
+    try {
+      const r = await onAnalyzeByName?.(from.trim(), to.trim());
+      if (r?.origin_name && r?.dest_name) setNameErr("");
+    } catch (err) {
+      setNameErr(String(err.message || err).replace(/^Error:\s*/, ""));
+    }
+  }
 
   async function runAi(e) {
     e.preventDefault();
@@ -45,6 +60,28 @@ export default function LogisticsSidebar({ route, busy, onAnalyze, onFocus, aiAv
 
       <div className="section-title">Simulate a delivery route</div>
 
+      <form className="route-form" onSubmit={runNamed}>
+        <div className="route-field">
+          <span className="pin" style={{ color: "#5dcaa5" }}>FROM</span>
+          <input value={from} onChange={(e) => setFrom(e.target.value)} disabled={busy}
+            placeholder="Pickup area — e.g. “Koramangala”" aria-label="Origin area" />
+        </div>
+        <div className="route-field">
+          <span className="pin" style={{ color: "#78a2ff" }}>TO</span>
+          <input value={to} onChange={(e) => setTo(e.target.value)} disabled={busy}
+            placeholder="Drop area — e.g. “Whitefield”" aria-label="Destination area" />
+        </div>
+        <button type="submit" className="btn" disabled={busy || !from.trim() || !to.trim()}>
+          {busy ? "Analyzing…" : "Analyze route"}</button>
+      </form>
+      {route?.origin_name && route?.dest_name && !nameErr && (
+        <div className="route-resolved">✓ {route.origin_name} → {route.dest_name}</div>
+      )}
+      {nameErr && <div className="muted" style={{ color: "var(--hot)", marginBottom: 8, fontSize: 11 }}>{nameErr}</div>}
+      <div className="muted" style={{ fontSize: 11, margin: "2px 0 8px" }}>
+        Typos &amp; abbreviations are fine (e.g. “ecity”, “marthahalli”).
+      </div>
+
       {aiAvail && (
         <>
           <form className="ai-routebox" onSubmit={runAi}>
@@ -54,10 +91,10 @@ export default function LogisticsSidebar({ route, busy, onAnalyze, onFocus, aiAv
             <button type="submit" className="cmd-go" disabled={aiBusy || !q.trim()}>Go</button>
           </form>
           {aiErr && <div className="muted" style={{ color: "var(--hot)", marginBottom: 8, fontSize: 11 }}>{aiErr}</div>}
-          <div className="muted" style={{ fontSize: 11, margin: "2px 0 8px" }}>…or pick a sample corridor:</div>
         </>
       )}
 
+      <div className="section-title">Or pick a sample corridor</div>
       {PRESETS.map((p) => (
         <button key={p.name} className="btn alt" style={{ marginBottom: 6, textAlign: "left" }}
           disabled={busy || aiBusy} onClick={() => onAnalyze(p.wp)}>{p.name}</button>

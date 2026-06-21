@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 
 export default function HotspotsPanel({ stats, tops, rcp, selected, onSelect }) {
   const [topN, setTopN] = useState(10);
+  const [showAllZones, setShowAllZones] = useState(false);
   const rcpByGh = useMemo(() => {
     const m = {};
     (rcp?.features || []).forEach((f) => { m[f.properties.gh7] = f.properties.delay_min; });
@@ -32,7 +33,7 @@ export default function HotspotsPanel({ stats, tops, rcp, selected, onSelect }) 
         ))}
       </div>
       <div className="section-title">Priority enforcement zones</div>
-      {(tops || []).slice(0, 40).map((z) => (
+      {(showAllZones ? (tops || []) : (tops || []).slice(0, 3)).map((z) => (
         <div key={z.gh7} className={"card" + (z.gh7 === selected ? " sel" : "")} onClick={() => onSelect(z)}>
           <div className="row">
             <span className="name">#{z.rank} · <span className="mono">{z.gh7}</span></span>
@@ -45,6 +46,11 @@ export default function HotspotsPanel({ stats, tops, rcp, selected, onSelect }) 
           </div>
         </div>
       ))}
+      {(tops || []).length > 3 && (
+        <button className="btn more" style={{ marginTop: 4 }} onClick={() => setShowAllZones((v) => !v)}>
+          {showAllZones ? "Show top 3 only" : `Show all ${tops.length} ranked zones`}
+        </button>
+      )}
     </div>
   );
 }
