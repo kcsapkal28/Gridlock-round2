@@ -1,6 +1,20 @@
+# FastAPI backend runtime (api/). Install with: pip install -r requirements-api.txt
+# Target: Python 3.12.
+
+# --- web framework ---
 fastapi==0.137.2
-httpx==0.28.1
-pydantic==2.13.4
-pytest==9.1.0
 starlette==1.3.1
 uvicorn==0.49.0
+pydantic==2.13.4
+httpx==0.28.1
+
+# --- scoring service runtime (api/scoring.py, api/geo.py, api/artifacts.py) ---
+pandas==2.2.3
+numpy==1.26.4
+pyarrow==17.0.0          # parquet engine for cell_scores.parquet
+pygeohash==1.2.0         # geohash-7 lookup
+scikit-learn==1.5.2
+lightgbm==4.5.0          # loads fe_work/fe_out/model_impact.txt (LightGBM booster)
+
+# --- tests ---
+pytest==9.1.0

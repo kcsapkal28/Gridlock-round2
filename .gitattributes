@@ -1,0 +1,17 @@
+# Keep committed model/data artifacts byte-identical across OSes.
+# LightGBM model .txt files are line-sensitive: a CRLF checkout on Windows breaks
+# the parser ("Model format error, expect a tree here"). Mark them (and the other
+# binary-ish artifacts) so git NEVER performs EOL conversion.
+
+# LightGBM boosters and any model dumps
+fe_work/fe_out/*.txt        -text
+
+# Scored data layers (also served verbatim to the frontend)
+fe_work/fe_out/*.geojson    -text
+fe_work/fe_out/*.csv        -text
+web/public/data/*.geojson   -text
+web/public/data/*.json      -text
+web/public/data/*.csv       -text
+
+# Parquet is binary
+*.parquet                   binary
