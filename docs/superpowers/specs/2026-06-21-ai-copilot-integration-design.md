@@ -58,8 +58,8 @@ Response: { reply, ui_actions[] }   ← text + actions the UI applies to existin
 ## 5. Backend (`api/ai/`)
 New module, isolated from existing endpoints:
 - `client.py` — thin Claude wrapper (build messages, run tool loop, model selection, timeout,
-  health check). Models configurable: `AI_MODEL_AGENT` (default `claude-sonnet-4-6`) for the
-  command loop, `AI_MODEL_FAST` (default `claude-haiku-4-5-20251001`) for brief/explain/insights.
+  health check). Single model for all surfaces: `AI_MODEL` (default `claude-sonnet-4-6`),
+  used by the command loop and by brief/explain/insights alike.
 - `tools.py` — tool definitions + executors, each a thin wrapper over existing code:
   | Tool | Backs onto |
   |---|---|
@@ -74,8 +74,8 @@ New module, isolated from existing endpoints:
   `{reply, ui_actions}` (command) or grounded text (brief/explain/insights).
 - `prompts.py` — system prompt + per-endpoint task prompts (operational, concise, grounded).
 - `insights.py` — native candidate computation for pillar 4 (divergence, per-station severity).
-- Config additions in `api/config.py`: `AI_BASE_URL`, `AI_API_KEY`, `AI_MODEL_AGENT`,
-  `AI_MODEL_FAST`, `AI_ENABLED`, `AI_TIMEOUT`, `AI_MAX_TOOL_ITERS` (default 5).
+- Config additions in `api/config.py`: `AI_BASE_URL`, `AI_API_KEY`, `AI_MODEL`
+  (default `claude-sonnet-4-6`), `AI_ENABLED`, `AI_TIMEOUT`, `AI_MAX_TOOL_ITERS` (default 5).
 - `GET /api/v1/ai/health` (or extend `/health`): reports copilot availability.
 - `anthropic` added to `requirements-api.txt`.
 
