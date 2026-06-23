@@ -43,6 +43,13 @@ export async function patrolPlan(units, topk, priority = "impact", startFromStat
   if (!r.ok) throw new Error(`patrol ${r.status}`);
   return r.json();
 }
+// Plain-language deployment decision + shareable shift order (deterministic; no AI needed).
+export async function commandToday(n = 3, units = 3, area = "") {
+  const q = `?n=${n}&units=${units}` + (area ? `&area=${encodeURIComponent(area)}` : "");
+  const r = await apiFetch(`/api/v1/command/today${q}`);
+  if (!r.ok) throw new Error(`command ${r.status}`);
+  return r.json();
+}
 // Forgiving area-name geocoder (typos / abbreviations OK). Returns {name,lat,lon,...} or {error}.
 export async function geocodePlace(q) {
   const r = await apiFetch(`/api/v1/geocode?q=${encodeURIComponent(q)}`);
