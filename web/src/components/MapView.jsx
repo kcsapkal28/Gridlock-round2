@@ -24,18 +24,45 @@ export default function MapView(props) {
       features: (cells.features || []).filter((f) => (f.properties.impact || 0) >= impactMin) };
   }, [cells, showAll, impactMin]);
 
+  const whatifPicking = whatif && multiSet.size > 0;   // focus+context once zones are chosen
   if (cellData) {
     layers.push(new GeoJsonLayer({
       id: "cells", data: cellData, pickable: true, stroked: true, filled: true,
       getFillColor: (f) => {
-        if (whatif && multiSet.has(f.properties.gh7)) return [255, 178, 62, 235];
-        return impactColor(f.properties.impact, persona === "logistics" ? 90 : 170);
+        // Selected What-If zones use a vivid magenta — deliberately OUTSIDE the blue→amber→red
+        // impact ramp — so they never blend into the high-impact (amber/orange) zones.
+        if (whatif && multiSet.has(f.properties.gh7)) return [236, 92, 214, 245];
+        const base = impactColor(f.properties.impact, persona === "logistics" ? 90 : 170);
+        // While picking, fade the rest so the chosen set pops (keeps citywide context, just dimmed).
+        return whatifPicking ? [base[0], base[1], base[2], 55] : base;
       },
-      getLineColor: (f) => (f.properties.gh7 === selected ? [255, 178, 62, 255] : [18, 26, 42, 120]),
-      getLineWidth: (f) => (f.properties.gh7 === selected ? 4 : 1),
+      getLineColor: (f) => {
+        if (whatif && multiSet.has(f.properties.gh7)) return [255, 255, 255, 255];   // bright halo
+        return f.properties.gh7 === selected ? [255, 178, 62, 255] : [18, 26, 42, 110];
+      },
+      getLineWidth: (f) => {
+        if (whatif && multiSet.has(f.properties.gh7)) return 2.5;
+        return f.properties.gh7 === selected ? 4 : 1;
+      },
       lineWidthUnits: "pixels",
       onClick: (info) => { if (info.object) (whatif ? onToggleCell(info.object.properties.gh7) : onSelect(info.object.properties)); },
-      updateTriggers: { getFillColor: [whatif, multi], getLineColor: selected, getLineWidth: selected },
+      updateTriggers: {
+        getFillColor: [whatif, multi], getLineColor: [whatif, multi, selected],
+        getLineWidth: [whatif, multi, selected],
+      },
+    }));
+  }
+
+  // What-If — magenta ring markers at each selected zone, so the chosen set is visible at any
+  // zoom (150 m cells are tiny citywide). Click a ring to drop the zone from the plan.
+  if (whatif && multiSet.size && tops?.length) {
+    const selPts = tops.filter((z) => multiSet.has(z.gh7));
+    layers.push(new ScatterplotLayer({
+      id: "whatif-sel", data: selPts, pickable: true, getPosition: (d) => [d.lon, d.lat],
+      getRadius: 80, radiusUnits: "meters", radiusMinPixels: 8, radiusMaxPixels: 16,
+      getFillColor: [236, 92, 214, 200], getLineColor: [255, 255, 255, 255], lineWidthMinPixels: 2, stroked: true,
+      onClick: (info) => info.object && onToggleCell(info.object.gh7),
+      updateTriggers: { getPosition: multi },
     }));
   }
 
@@ -203,6 +230,7 @@ function Legend({ mode, showStations }) {
       <div>Congestion-Impact Score</div>
       <div className="bar" />
       <div className="ends"><span>0 (low)</span><span>100 (critical)</span></div>
+      {mode === "whatif" && <div style={{ marginTop: 6 }}><Dot c="#ec5cd6" />Selected to clear</div>}
       {station}
     </div>
   );
